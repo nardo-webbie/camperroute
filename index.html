@@ -544,10 +544,16 @@ async function loadTips() {
 }
 
 async function deleteTip(id) {
+  if (!confirm('Tip verwijderen?')) return;
+  const el = document.getElementById(id);
   try {
-    await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    document.getElementById(id)?.remove();
-  } catch { alert('Kon tip niet verwijderen.'); }
+    const r = await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error(`Server: ${r.status}`);
+    el?.remove();
+  } catch (e) {
+    console.error('Delete fout:', e);
+    alert('Kon tip niet verwijderen: ' + e.message);
+  }
 }
 
 async function submitTip() {
