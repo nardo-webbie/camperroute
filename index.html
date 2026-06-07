@@ -27,8 +27,8 @@
   .phase-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.5rem;color:var(--olive);white-space:nowrap;}
   .phase-line{flex:1;height:1px;background:var(--border);}
   .phase-days{font-size:.75rem;color:var(--stone);white-space:nowrap;}
-  .day-card{background:var(--warm);border:1px solid var(--border);margin-bottom:.85rem;overflow:hidden;transition:box-shadow .25s,transform .15s;cursor:pointer;}
-  .day-card:hover{box-shadow:0 6px 24px rgba(26,20,16,.1);transform:translateY(-1px);}
+  .day-card { background: var(--warm); border: 1px solid var(--border); margin-bottom: .85rem; overflow: hidden; transition: box-shadow .25s, transform .15s; cursor: pointer; }
+  .day-card:hover { box-shadow: 0 6px 24px rgba(26,20,16,.1); transform: translateY(-1px); }
   .day-header{display:grid;grid-template-columns:64px 1fr auto;align-items:center;padding:1rem 1.25rem;gap:1rem;user-select:none;}
   .day-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--border);text-align:center;line-height:1;}
   .day-title{font-weight:500;font-size:.93rem;color:var(--ink);}
@@ -475,7 +475,8 @@
 
 <script>
 // ─── Card toggle ───────────────────────────────────────────
-function toggle(card) {
+function toggle(card, e) {
+  if (e && e.target.closest('.notes-section, .ai-tips-container, .ai-tips-label, .ai-tip-del, .panel-close, .fab')) return;
   const body = card.querySelector('.day-body');
   const open = !body.classList.contains('open');
   body.classList.toggle('open', open);
@@ -617,7 +618,7 @@ document.querySelectorAll('.day-body').forEach(body => {
 document.addEventListener('click', e => {
   if (e.target.closest('.notes-section') || e.target.closest('.ai-tips-container') || e.target.closest('.ai-tips-label'))
     e.stopPropagation();
-}, true);
+});
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
