@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camperroute Dordrecht → Amalfi · Natuur</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--parchment);color:var(--ink);font-family:'Outfit',sans-serif;font-weight:300;line-height:1.65;min-height:100vh;}
+
+  header{background:var(--ink);color:var(--parchment);padding:3.5rem 2rem 3rem;text-align:center;position:relative;overflow:hidden;}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 30%,rgba(107,122,58,.35) 0%,transparent 55%),radial-gradient(ellipse at 15% 70%,rgba(200,148,42,.2) 0%,transparent 45%);}
+  .header-label{font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-light);margin-bottom:.8rem;position:relative;}
+  header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,6vw,4rem);font-weight:300;letter-spacing:.04em;line-height:1.1;position:relative;}
+  header h1 em{font-style:italic;color:var(--olive-light);}
+  .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
+  .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
+  .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
+  .specs-bar{background:var(--rust);color:var(--parchment);display:flex;justify-content:center;gap:0 2.5rem;padding:.9rem 2rem;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;flex-wrap:wrap;row-gap:.4rem;}
+  .container{max-width:880px;margin:0 auto;padding:2rem 1.5rem 7rem;}
+  .controls{display:flex;gap:.75rem;margin-bottom:.5rem;flex-wrap:wrap;}
+  .ctrl-btn{background:none;border:1px solid var(--border);color:var(--stone);font-family:'Outfit',sans-serif;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;padding:.45rem 1rem;cursor:pointer;border-radius:2px;transition:all .2s;}
+  .ctrl-btn:hover{background:var(--olive);border-color:var(--olive);color:#fff;}
+  .phase-header{display:flex;align-items:center;gap:1rem;margin:2.5rem 0 1rem;}
+  .phase-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.5rem;color:var(--olive);white-space:nowrap;}
+  .phase-line{flex:1;height:1px;background:var(--border);}
+  .phase-days{font-size:.75rem;color:var(--stone);white-space:nowrap;}
+  .day-card{background:var(--warm);border:1px solid var(--border);margin-bottom:.85rem;overflow:hidden;transition:box-shadow .25s,transform .15s;cursor:pointer;}
+  .day-card:hover{box-shadow:0 6px 24px rgba(26,20,16,.1);transform:translateY(-1px);}
+  .day-header{display:grid;grid-template-columns:64px 1fr auto;align-items:center;padding:1rem 1.25rem;gap:1rem;user-select:none;}
+  .day-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--border);text-align:center;line-height:1;}
+  .day-title{font-weight:500;font-size:.93rem;color:var(--ink);}
+  .day-sub{font-size:.78rem;color:var(--stone);margin-top:.15rem;}
+  .day-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;}
+  .day-km{font-weight:500;color:var(--rust);font-size:.88rem;}
+  .day-type{font-size:.7rem;color:var(--stone);}
+  .chevron{font-size:.65rem;color:var(--border);transition:transform .2s;margin-top:.2rem;}
+  .day-card.open .chevron{transform:rotate(180deg);}
+  .day-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .day-body.open{display:block;}
+  .day-body p{font-size:.87rem;color:var(--mid);margin-top:.9rem;line-height:1.75;}
+  .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.85rem;}
+  .tag{font-size:.68rem;padding:.2rem .65rem;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;}
+  .tag-hond{background:#eaf0e0;color:var(--olive);}
+  .tag-camper{background:#f0e4dc;color:var(--rust);}
+  .tag-wandel{background:#dce8f0;color:#3a6a80;}
+  .tag-rust{background:#f0ece0;color:var(--stone);}
+  .tag-natuur{background:#e4eed8;color:#4a6a20;}
+  .tag-oktober{background:#f0e8d0;color:var(--gold);}
+  .tag-ferry{background:#d8f0ec;color:#2a7a6a;}
+  .tag-warn{background:#fde8d8;color:var(--rust);}
+  .info-box{padding:.8rem 1rem;margin-top:.85rem;font-size:.83rem;border-radius:0 2px 2px 0;line-height:1.6;}
+  .box-tip{background:#f5efe3;border-left:3px solid var(--gold);color:var(--mid);}
+  .box-tip strong{color:var(--gold);}
+  .box-camper{background:#eef2e8;border-left:3px solid var(--olive);color:var(--mid);}
+  .box-camper strong{color:var(--olive);}
+  .box-warn{background:#fdf0e8;border-left:3px solid var(--rust);color:var(--mid);}
+  .box-warn strong{color:var(--rust);}
+  .box-natuur{background:#edf4e4;border-left:3px solid var(--olive-light);color:var(--mid);}
+  .box-natuur strong{color:var(--olive);}
+
+  /* AI TIPS */
+  .ai-tips-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--olive);margin-top:1rem;margin-bottom:.3rem;display:none;}
+  .ai-tip-box{background:#edf4e4;border:1px solid #c4dba0;border-left:3px solid var(--olive);padding:.8rem 2rem .75rem .9rem;margin-top:.45rem;position:relative;border-radius:0 2px 2px 0;}
+  .ai-tip-title{font-size:.83rem;font-weight:500;color:#406020;margin-bottom:.25rem;}
+  .ai-tip-content{font-size:.83rem;color:var(--mid);line-height:1.65;}
+  .ai-tip-meta{font-size:.67rem;color:var(--stone);margin-top:.35rem;display:block;}
+  .ai-tip-del{position:absolute;top:.45rem;right:.5rem;background:none;border:none;cursor:pointer;color:var(--stone);font-size:1rem;line-height:1;opacity:.35;padding:.1rem .3rem;}
+  .ai-tip-del:hover{opacity:1;color:var(--rust);}
+
+  /* NOTES */
+  .notes-section{margin-top:.85rem;border-top:1px dashed var(--border);padding-top:.85rem;}
+  .notes-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--stone);margin-bottom:.4rem;}
+  .notes-textarea{width:100%;min-height:70px;background:#faf7f0;border:1px solid var(--border);border-radius:2px;padding:.6rem .75rem;font-family:'Outfit',sans-serif;font-size:.83rem;color:var(--ink);resize:vertical;line-height:1.6;transition:border-color .2s;}
+  .notes-textarea:focus{outline:none;border-color:var(--gold);}
+  .notes-textarea::placeholder{color:#c0b49a;}
+  .notes-save-row{display:flex;justify-content:flex-end;align-items:center;gap:.75rem;margin-top:.4rem;}
+  .notes-saved-msg{font-size:.72rem;color:var(--olive);opacity:0;transition:opacity .3s;}
+  .notes-saved-msg.show{opacity:1;}
+  .notes-save-btn{background:none;border:1px solid var(--gold);color:var(--gold);font-family:'Outfit',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .85rem;cursor:pointer;border-radius:2px;transition:all .2s;}
+  .notes-save-btn:hover{background:var(--gold);color:#fff;}
+
+  /* FAB */
+  .fab{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--olive);color:#fff;border:none;border-radius:50px;padding:.9rem 1.45rem;font-family:'Outfit',sans-serif;font-size:.87rem;font-weight:500;cursor:pointer;box-shadow:0 4px 22px rgba(0,0,0,.28);z-index:100;transition:all .2s;letter-spacing:.03em;}
+  .fab:hover{background:var(--olive-light);transform:translateY(-2px);}
+
+  /* PANEL */
+  .overlay{position:fixed;inset:0;background:rgba(26,20,16,.55);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .overlay.open{opacity:1;pointer-events:all;}
+  .tip-panel{position:fixed;bottom:0;left:0;right:0;background:var(--warm);border-top:2px solid var(--olive-light);padding:1.75rem 1.5rem 2rem;z-index:201;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:80vh;overflow-y:auto;}
+  .tip-panel.open{transform:translateY(0);}
+  .panel-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;}
+  .panel-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;}
+  .panel-close{background:none;border:none;color:var(--stone);font-size:1.25rem;cursor:pointer;padding:.1rem .3rem;line-height:1;}
+  .panel-sub{font-size:.82rem;color:var(--stone);margin-bottom:1rem;line-height:1.55;}
+  .panel-input{width:100%;min-height:90px;padding:.72rem .85rem;font-family:'Outfit',sans-serif;font-size:.87rem;color:var(--ink);background:var(--parchment);border:1px solid var(--border);resize:vertical;line-height:1.6;border-radius:2px;transition:border-color .2s;}
+  .panel-input:focus{outline:none;border-color:var(--olive);}
+  .panel-row{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;gap:1rem;}
+  .panel-status{font-size:.78rem;color:var(--stone);flex:1;line-height:1.4;}
+  .panel-btn{background:var(--olive);color:#fff;border:none;padding:.65rem 1.5rem;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:500;cursor:pointer;letter-spacing:.04em;border-radius:2px;transition:background .2s;white-space:nowrap;}
+  .panel-btn:hover:not(:disabled){background:var(--olive-light);}
+  .panel-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  /* PREVIEW BANNER */
+  .preview-banner{background:#fff8e8;border:1px solid var(--gold);color:var(--mid);font-size:.78rem;padding:.7rem 1rem;margin-bottom:1.25rem;border-radius:2px;line-height:1.5;display:none;}
+  .preview-banner.show{display:block;}
+
+  /* TOTALS */
+  .totals{background:var(--ink);color:var(--parchment);padding:2rem 1.5rem;margin-top:2.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1.5rem;text-align:center;position:relative;overflow:hidden;}
+  .totals::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(107,122,58,.25) 0%,transparent 60%);}
+  .total-item{position:relative;}
+  .total-val{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--gold-light);line-height:1;}
+  .total-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(242,234,216,.5);margin-top:.3rem;}
+  .legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.5rem;font-size:.75rem;color:var(--stone);}
+  .legend-item{display:flex;align-items:center;gap:.4rem;}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dot-drive{background:var(--rust-light);}
+  .dot-rest{background:var(--olive-light);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Camperreis · Oktober 2025 · Natuur-editie</div>
+  <h1>Dordrecht <em>naar</em><br>Amalfikust</h1>
+  <div class="header-divider"></div>
+  <p class="header-meta">31 dagen · Geen grote steden · Natuur, wandelen & rust · Met hond</p>
+</header>
+<div class="oktober-bar">🌿 Natuur-route — geen Florence, geen Rome — wél Dolomieten, Apennijnen, Maremma & Cilento</div>
+<div class="specs-bar">
+  <span>🚐 6m lang · 2,52m hoog</span>
+  <span>🐕 Hondvriendelijk</span>
+  <span>📅 31 dagen · Oktober</span>
+  <span>🛣️ ~3.900 km totaal</span>
+  <span>🌡️ 10–22°C onderweg</span>
+</div>
+
+<div class="container">
+  <div id="previewBanner" class="preview-banner">
+    ⚠️ <strong>Preview-modus:</strong> AI-tips werken na deployment op Vercel. Persoonlijke notities werken altijd (lokaal opgeslagen).
+  </div>
+  <div class="controls">
+    <button class="ctrl-btn" onclick="toggleAll()">Alles uitklappen</button>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="dot dot-drive"></div> Rijdag</div>
+    <div class="legend-item"><div class="dot dot-rest"></div> Rustdag / verblijf</div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div class="phase-header"><span class="phase-label">Fase 1 — Zwarte Woud & Alpen</span><div class="phase-line"></div><span class="phase-days">Dag 1–6</span></div>
+
+  <div class="day-card" data-day-id="dag-01" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">01</div>
+      <div><div class="day-title">🔴 Dordrecht → Schluchsee</div><div class="day-sub">Zwarte Woud · Duitsland · 930m</div></div>
+      <div class="day-right"><div class="day-km">~450 km</div><div class="day-type">±5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A16 door België, E40 en A5 southbound naar Freiburg, dan de B31 omhoog naar Schluchsee. In oktober zijn de bossen vuurrood en oranje — een van de mooiste herfstlandschappen van Europa.</p>
+      <div class="tags"><span class="tag tag-camper">Snelweg + bosweg</span><span class="tag tag-oktober">Herfstbladeren</span><span class="tag tag-hond">Rustig seizoen</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping Wolfgrund of Campingpark Schluchsee-Spiegelhalden. In oktober geen reservering nodig.</div>
+      <div class="box-tip info-box"><strong>Tip:</strong> Tank in België — merkbaar goedkoper dan Duitsland.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-02-03" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">02–03</div>
+      <div><div class="day-title">🟢 Zwarte Woud — 2 nachten</div><div class="day-sub">Feldberg · Titisee · Herfstbos</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Dag 2: wandel rondom Schluchsee (~15 km) — honden mogen los op de bospaden. Dag 3: rit naar de Feldberg (1.493m). Panoramawandeling via de Feldbergturm-route met uitzicht over de Alpen en de Vogezen.</p>
+      <div class="tags"><span class="tag tag-wandel">15km meerwandeling</span><span class="tag tag-natuur">Feldberg 1.493m</span><span class="tag tag-hond">Los in het bos</span><span class="tag tag-oktober">Herfstkleuren</span></div>
+      <div class="box-natuur info-box"><strong>Feldberg in oktober:</strong> Eerste sneeuw is mogelijk op de top. Honden mogen vrij lopen buiten het reservaat.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-04" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">04</div>
+      <div><div class="day-title">🔴 Schluchsee → Karwendel</div><div class="day-sub">Tirol · Natuurpark · Oostenrijk</div></div>
+      <div class="day-right"><div class="day-km">~290 km</div><div class="day-type">±3,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via Feldkirch en de A14/A12 door het Inn-dal naar het Karwendelgebergte bij Scharnitz of Achensee. Het Karwendel is het grootste aaneengesloten natuurpark van Oostenrijk — wilde rotswanden, oerbossen en rivieren.</p>
+      <div class="tags"><span class="tag tag-natuur">Naturpark Karwendel</span><span class="tag tag-camper">Vignette Oostenrijk</span><span class="tag tag-hond">Bospaden</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping Karwendel (Scharnitz) of Stellplatz Achensee.</div>
+      <div class="box-warn info-box"><strong>Vignette:</strong> Koop de Oostenrijkse vignette digitaal via ASFINAG.at vóór vertrek.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-05-06" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">05–06</div>
+      <div><div class="day-title">🟢 Karwendel — 2 nachten</div><div class="day-sub">Gleirschklamm · Isar-bron · Wildlife</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Dag 5: wandel door de Gleirschklamm — een wilde kloof met turquoise bergbeek, nauwelijks bezoekers in oktober. Dag 6: Isarquelle-wandeling naar de bron van de Isar (~10km retour). Honden mogen overal mee.</p>
+      <div class="tags"><span class="tag tag-wandel">Kloofwandeling</span><span class="tag tag-natuur">Isar-bron</span><span class="tag tag-hond">Overal welkom</span><span class="tag tag-oktober">Brunfttijd herten</span></div>
+      <div class="box-natuur info-box"><strong>Wildlife:</strong> Oktober is het brunfttijdperk van herten — 's ochtends vroeg hoor je ze brullen. Kans op gemzen en marmotten.</div>
+    </div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div class="phase-header"><span class="phase-label">Fase 2 — Dolomieten</span><div class="phase-line"></div><span class="phase-days">Dag 7–11</span></div>
+
+  <div class="day-card" data-day-id="dag-07" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">07</div>
+      <div><div class="day-title">🔴 Karwendel → Pragser Wildsee</div><div class="day-sub">Dolomieten · Zuid-Tirol</div></div>
+      <div class="day-right"><div class="day-km">~200 km</div><div class="day-type">±3 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via Brennerpas en Brixen, dan afslag naar Bruneck en de SS49 naar het Höhlensteintal. Aankomst bij het Pragser Wildsee — smaragdgroen bergmeer omgeven door verticale rotswanden. In oktober bijna verlaten.</p>
+      <div class="tags"><span class="tag tag-natuur">Smaragdgroen meer</span><span class="tag tag-oktober">Geen drukte</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Campingplatz Toblach (~5km van het meer), geen beperkingen voor 6m.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-08" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">08</div>
+      <div><div class="day-title">🟢 Tre Cime di Lavaredo</div><div class="day-sub">Grote rondwandeling · 9,5km</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Wandeldag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>De Große Umrundung (~9,5km, 550hm) is in oktober op zijn beste — bijna niemand, heldere lucht, kans op besneeuwde toppen. Jouw camper (6m) mag de tolweg op. Tol ~€30 retour. Honden toegestaan.</p>
+      <div class="tags"><span class="tag tag-wandel">9,5km · 550hm</span><span class="tag tag-hond">Hond welkom</span><span class="tag tag-oktober">Geen drukte</span><span class="tag tag-camper">Tolweg €30</span></div>
+      <div class="box-warn info-box"><strong>Oktober:</strong> De tolweg sluit doorgaans half oktober — check rifugioauronzo.it. Neem warme kleding: op de top kan het 0°C zijn.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-09-10" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">09–10</div>
+      <div><div class="day-title">🟢 Fanes-Sennes NP — 2 nachten</div><div class="day-sub">Alta Badia · Wilde hoogvlaktes</div></div>
+      <div class="day-right"><div class="day-km">~50 km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Verplaats naar Corvara en verken Naturpark Fanes-Sennes-Braies — een van de minst bezochte parken van de Dolomieten. Dag 9: wandeling door het Fanes-plateau (2.100m). Dag 10: Lech de Lagació — stille bergvijver met uitzicht op de Heiligkreuzkofel.</p>
+      <div class="tags"><span class="tag tag-natuur">Hoogvlakte 2.100m</span><span class="tag tag-wandel">Plateau-wandeling</span><span class="tag tag-hond">Vrij lopen</span><span class="tag tag-oktober">Ongerept</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping Colfosco of Area Sosta Corvara — geen hoogte/lengtebeperkingen.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-11" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">11</div>
+      <div><div class="day-title">🔴 Dolomieten → Gardameer</div><div class="day-sub">Riva del Garda · Via Trento</div></div>
+      <div class="day-right"><div class="day-km">~180 km</div><div class="day-type">±2,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via Cortina, de SS51 en A22 southbound door het Etschtal naar Riva del Garda. De rit zelf is al een spektakel. Aankomst bij het rustigste deel van het Gardameer — october: geen drukte, 16–18°C.</p>
+      <div class="tags"><span class="tag tag-camper">A22 Brennersnelweg</span><span class="tag tag-natuur">Etschtal</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping Brione (Riva del Garda) — direct aan het meer, honden welkom.</div>
+    </div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div class="phase-header"><span class="phase-label">Fase 3 — Toscane Natuur</span><div class="phase-line"></div><span class="phase-days">Dag 12–19</span></div>
+
+  <div class="day-card" data-day-id="dag-12-13" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">12–13</div>
+      <div><div class="day-title">🔴🟢 Val d'Orcia — 2 nachten</div><div class="day-sub">Toscane · ~270 km van Gardameer</div></div>
+      <div class="day-right"><div class="day-km">~270 km</div><div class="day-type">±3 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via Verona en de A22/A1, afslag Valdichiana dan SR2 naar het Val d'Orcia. Dag 13: wandeling door de Crete Senesi — eindeloze golvende heuvels, geen toerist in zicht, hond mag vrij. Oktober: goudbruin en zacht licht.</p>
+      <div class="tags"><span class="tag tag-natuur">Crete Senesi</span><span class="tag tag-wandel">Heuvelwandeling</span><span class="tag tag-hond">Vrij lopen</span><span class="tag tag-oktober">Gouden licht</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Agriturismo Poggio Covili (Castiglione d'Orcia) — hondvriendelijk, olijfboomgaard.</div>
+      <div class="box-tip info-box"><strong>Must-do:</strong> Zonsondergang bij de Cappella della Madonna di Vitaleta — in oktober helemaal leeg. Onvergetelijk.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-14-15" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">14–15</div>
+      <div><div class="day-title">🟢 Monte Amiata — 2 nachten</div><div class="day-sub">Vulkaan · Kastanjebossen · 1.738m</div></div>
+      <div class="day-right"><div class="day-km">~50 km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Slapende vulkaan omgeven door kastanjebossen. Oktober = paddenstoelenseizoen. Dag 14: top-wandeling via Anello della Montagna (~16km). Dag 15: Terme di Saturnia — warme zwavelbronnen (~37°C) gratis toegankelijk, honden mogen mee in de cascades.</p>
+      <div class="tags"><span class="tag tag-natuur">Vulkaan 1.738m</span><span class="tag tag-wandel">16km rondwandeling</span><span class="tag tag-hond">Cascades welkom</span><span class="tag tag-oktober">Paddenstoelenseizoen</span></div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-16-17" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">16–17</div>
+      <div><div class="day-title">🟢 Maremma NP — 2 nachten</div><div class="day-sub">Kust · Wilde paarden · Uccellina</div></div>
+      <div class="day-right"><div class="day-km">~90 km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Parco della Maremma — een mix van kliffen, maquis, moerasland en wilde stranden. In oktober verlaten stranden, rustig park en wilde Maremmanapaarden goed zichtbaar.</p>
+      <div class="tags"><span class="tag tag-natuur">Nationaalpark</span><span class="tag tag-wandel">Klifpad</span><span class="tag tag-hond">Strandpaden</span><span class="tag tag-oktober">Wild strand</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Area Sosta Alberese (parkentree) of Camping Maremma Sans Souci (Castiglione della Pescaia).</div>
+      <div class="box-natuur info-box"><strong>Parktip:</strong> Wandelroute A2 (Le Torri, 9km) is hondvriendelijk. Boek wandelpas bij het bezoekerscentrum Alberese.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-18-19" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">18–19</div>
+      <div><div class="day-title">🟢 Cinque Terre — Alta Via</div><div class="day-sub">~200 km · La Spezia als basis</div></div>
+      <div class="day-right"><div class="day-km">~200 km</div><div class="day-type">Verblijf</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>In oktober bijna verlaten. Vermijd het drukke kustpad; kies het Alta Via del Golfo — hoger wandelpad boven de dorpjes, hondvriendelijker. Dag 18 vanuit La Spezia per trein naar de dorpjes, dag 19 wandeling Portovenere → Framura (~12km).</p>
+      <div class="tags"><span class="tag tag-camper">Basis La Spezia</span><span class="tag tag-wandel">Alta Via 12km</span><span class="tag tag-hond">Hondvriendelijk pad</span><span class="tag tag-oktober">Authentiek</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Area Camper La Spezia (Via del Canaletto) — geen beperkingen voor 6m.</div>
+    </div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div class="phase-header"><span class="phase-label">Fase 4 — Apennijnen & Cilento</span><div class="phase-line"></div><span class="phase-days">Dag 20–24</span></div>
+
+  <div class="day-card" data-day-id="dag-20-21" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">20–21</div>
+      <div><div class="day-title">🔴🟢 Apennijnen NP</div><div class="day-sub">Pietra di Bismantova · Tafelberg</div></div>
+      <div class="day-right"><div class="day-km">~150 km</div><div class="day-type">±2 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A15 het binnenland in naar de Pietra di Bismantova — een spectaculaire tafelberg (1.041m) die Dante inspireerde voor het Vagevuur. Wandeling naar de top (3 uur retour), 360° uitzicht. Oktober: gouden beukenbossen.</p>
+      <div class="tags"><span class="tag tag-natuur">Tafelberg 1.041m</span><span class="tag tag-wandel">Dante's inspiratie</span><span class="tag tag-hond">Beukenboswandeling</span><span class="tag tag-oktober">Gouden beuken</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Area Sosta Castelnovo ne' Monti — bij de voet van de Pietra.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-22-23" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">22–23</div>
+      <div><div class="day-title">🔴🟢 Parco del Cilento</div><div class="day-sub">~380 km · UNESCO · Onbekend park</div></div>
+      <div class="day-right"><div class="day-km">~380 km</div><div class="day-type">±5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>UNESCO Werelderfgoed en het minst bezochte nationale park van Italië. Dag 23: Gole del Calore — spectaculaire riviervlakte in de kloof, turquoise water. Geen toeristen in oktober.</p>
+      <div class="tags"><span class="tag tag-natuur">UNESCO · Onbekend park</span><span class="tag tag-wandel">Kloof + rivier</span><span class="tag tag-hond">Rustige natuur</span><span class="tag tag-oktober">Bijna niemand</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Agriturismo Il Frantoio (Castelcivita) of Area Sosta Palinuro.</div>
+      <div class="box-natuur info-box"><strong>Cilento tip:</strong> Bezoek ook de Grotte di Castelcivita — minder toeristisch dan de Blauwe Grot van Capri.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-24" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">24</div>
+      <div><div class="day-title">🔴 Cilento → Pompei-omgeving</div><div class="day-sub">Kustweg · Vesuvius in zicht</div></div>
+      <div class="day-right"><div class="day-km">~130 km</div><div class="day-type">±2 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de kustweg northward langs de Golf van Salerno. Overnacht bij Pompei als uitvalsbasis voor Vesuvius én Amalfikust. Optioneel: opgraving van Pompei (honden welkom aan de lijn).</p>
+      <div class="tags"><span class="tag tag-natuur">Vesuvius in zicht</span><span class="tag tag-hond">Hond welkom Pompei</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping Zeus Pompei — direct naast de ingang, geen hoogte/lengtebeperkingen.</div>
+    </div>
+  </div>
+
+  <!-- FASE 5 -->
+  <div class="phase-header"><span class="phase-label">Fase 5 — Vesuvius & Amalfikust</span><div class="phase-line"></div><span class="phase-days">Dag 25–27</span></div>
+
+  <div class="day-card" data-day-id="dag-25" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">25</div>
+      <div><div class="day-title">🟢 Vesuvius wandeling</div><div class="day-sub">Krater · 1.281m · 600hm</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Wandeldag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Krater ~2 uur retour (600hm). Geen hitte in oktober, weinig drukte. Uitzicht over Golf van Napels, Capri en de Amalfikust. Honden toegestaan op het pad naar de krater — bevestig dit ter plekke bij de ingang.</p>
+      <div class="tags"><span class="tag tag-natuur">Actieve vulkaan</span><span class="tag tag-wandel">600hm · 2 uur retour</span><span class="tag tag-hond">Pad toegankelijk</span><span class="tag tag-oktober">Geen hitte</span></div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-26" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">26</div>
+      <div><div class="day-title">🔴 Pompei → Amalfikust</div><div class="day-sub">Basis Salerno · ~60 km</div></div>
+      <div class="day-right"><div class="day-km">~60 km</div><div class="day-type">±1,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>De SS163 Amalfidrive is voor een 6m camper stressvol — smalle bochten en steile kliffen. Beste aanpak: parkeer in Salerno en neem de boot naar Amalfi (~35 min, honden welkom aan dek).</p>
+      <div class="tags"><span class="tag tag-warn">SS163 smal</span><span class="tag tag-ferry">Boot vanaf Salerno</span><span class="tag tag-oktober">Rustig seizoen</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camper Park Salerno (haven). Boot naar Amalfi vertrekt meerdere keren per dag.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-27" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">27</div>
+      <div><div class="day-title">🟢 Sentiero degli Dei</div><div class="day-sub">Pad der Goden · 7,5km kustpad</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Wandeldag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Een van de mooiste kustpaden van Europa — Bomerano naar Nocelle. Oktober: geen hitte, geen drukte, helder uitzicht. Honden toegestaan. Neem voldoende water voor de hond.</p>
+      <div class="tags"><span class="tag tag-wandel">7,5km · Kustpad</span><span class="tag tag-hond">Hond welkom</span><span class="tag tag-oktober">Ideale omstandigheden</span></div>
+      <div class="box-tip info-box"><strong>Logistiek:</strong> Bus vanuit Amalfi naar Bomerano, wandel naar Nocelle, dan bus/taxi naar Positano en boot terug.</div>
+    </div>
+  </div>
+
+  <!-- FASE 6 -->
+  <div class="phase-header"><span class="phase-label">Fase 6 — Terugreis</span><div class="phase-line"></div><span class="phase-days">Dag 28–31</span></div>
+
+  <div class="day-card" data-day-id="dag-28-29" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">28–29</div>
+      <div><div class="day-title">🔴 Salerno → Lago Maggiore</div><div class="day-sub">Via A1 northbound · 2 rijdagen</div></div>
+      <div class="day-right"><div class="day-km">~900 km</div><div class="day-type">2 rijdagen</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Dag 28: Salerno → Bologna (~490km). Dag 29: Bologna → Lago Maggiore (~420km). Oktober aan het meer: herfstkleuren, bijna geen toeristen.</p>
+      <div class="tags"><span class="tag tag-camper">A1 northbound</span><span class="tag tag-natuur">Lago Maggiore</span><span class="tag tag-oktober">Herfst aan het meer</span></div>
+      <div class="box-camper info-box"><strong>Dag 28:</strong> Area Sosta Bologna. <strong>Dag 29:</strong> Camping Lago Maggiore (Fondotoce) — honden welkom.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-30" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">30</div>
+      <div><div class="day-title">🔴 Lago Maggiore → Basel/Freiburg</div><div class="day-sub">Via Gotthard tunnel</div></div>
+      <div class="day-right"><div class="day-km">~380 km</div><div class="day-type">±4,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A9 naar de Gotthard-tunnel (bergpas kan in oktober al sneeuw hebben). Via Luzern en Basel naar Freiburg voor de laatste nacht.</p>
+      <div class="tags"><span class="tag tag-camper">Gotthard tunnel</span><span class="tag tag-camper">CH-vignette nodig</span><span class="tag tag-oktober">Bergpas evt. gesloten</span></div>
+      <div class="box-warn info-box"><strong>Zwitserland:</strong> Jaarvignette CHF 40 via viasuisse.ch. Passtatus: aktuell.ch.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day-id="dag-31" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">31</div>
+      <div><div class="day-title">🔴 Freiburg → Dordrecht</div><div class="day-sub">Laatste etappe — thuis!</div></div>
+      <div class="day-right"><div class="day-km">~400 km</div><div class="day-type">±4,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A5 northbound, Karlsruhe, A67 richting Nederland. Via Venlo of Eindhoven terug naar Dordrecht. 31 dagen natuur — van Karwendel tot Amalfikust, zonder één grote stad.</p>
+      <div class="tags"><span class="tag tag-camper">Snelweg NL</span></div>
+      <div class="box-tip info-box"><strong>🏡 Welkom thuis.</strong> En begin alvast met plannen wat je volgend jaar gaat doen.</div>
+    </div>
+  </div>
+
+  <div class="totals">
+    <div class="total-item"><div class="total-val">31</div><div class="total-lbl">Dagen</div></div>
+    <div class="total-item"><div class="total-val">~3.900</div><div class="total-lbl">Km totaal</div></div>
+    <div class="total-item"><div class="total-val">12</div><div class="total-lbl">Rijdagen</div></div>
+    <div class="total-item"><div class="total-val">19</div><div class="total-lbl">Natuur/rust</div></div>
+    <div class="total-item"><div class="total-val">7</div><div class="total-lbl">Nat. parken</div></div>
+    <div class="total-item"><div class="total-val">0</div><div class="total-lbl">Grote steden</div></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openPanel()">＋ Tip toevoegen</button>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- Panel -->
+<div class="tip-panel" id="tipPanel">
+  <div class="panel-hdr">
+    <span class="panel-title">✨ Tip toevoegen via AI</span>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <p class="panel-sub">Beschrijf een wandeling, camperplaats, restaurant of opmerking. De AI vult het aan en koppelt het aan de juiste dag in de route.</p>
+  <textarea class="panel-input" id="tipInput" placeholder="bijv. 'Bij de Tre Cime altijd voor 9u starten' of 'Camping Natterer See heeft een mooi hondenstrand'"></textarea>
+  <div class="panel-row">
+    <div class="panel-status" id="tipStatus"></div>
+    <button class="panel-btn" id="tipBtn" onclick="submitTip()">Toevoegen</button>
+  </div>
+</div>
+
+<script>
+// ─── Card toggle ───────────────────────────────────────────
+function toggle(card) {
+  const body = card.querySelector('.day-body');
+  const open = !body.classList.contains('open');
+  body.classList.toggle('open', open);
+  card.classList.toggle('open', open);
+}
+
+let allOpen = false;
+function toggleAll() {
+  allOpen = !allOpen;
+  document.querySelectorAll('.day-body').forEach(b => b.classList.toggle('open', allOpen));
+  document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', allOpen));
+  document.querySelector('.ctrl-btn').textContent = allOpen ? 'Alles inklappen' : 'Alles uitklappen';
+}
+
+// ─── Notes (localStorage) ─────────────────────────────────
+const NOTES_KEY = 'camperroute_notes';
+function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch { return {}; } }
+function saveNote(dayId, text) { const n = loadNotes(); n[dayId] = text; localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
+function saveNoteFor(btn, dayId) {
+  const ta = btn.closest('.notes-section').querySelector('.notes-textarea');
+  saveNote(dayId, ta.value);
+  const msg = btn.closest('.notes-section').querySelector('.notes-saved-msg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+}
+
+// ─── Panel ────────────────────────────────────────────────
+function openPanel() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('tipPanel').classList.add('open');
+  setTimeout(() => document.getElementById('tipInput').focus(), 320);
+}
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('tipPanel').classList.remove('open');
+}
+
+// ─── AI Tips ─────────────────────────────────────────────
+function renderTip(tip) {
+  const date = new Date(tip.ts).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+  const preview = tip.userInput.length > 45 ? tip.userInput.slice(0, 45) + '…' : tip.userInput;
+  return `<div class="ai-tip-box" id="${tip.id}">
+    <button class="ai-tip-del" onclick="event.stopPropagation();deleteTip('${tip.id}')" title="Verwijderen">×</button>
+    <div class="ai-tip-title">${tip.tipTitle}</div>
+    <div class="ai-tip-content">${tip.tipContent}</div>
+    <span class="ai-tip-meta">Toegevoegd ${date} · "${preview}"</span>
+  </div>`;
+}
+
+function injectTip(tip) {
+  const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
+  if (!card) return;
+  const container = card.querySelector('.ai-tips-container');
+  const label = card.querySelector('.ai-tips-label');
+  if (container) container.insertAdjacentHTML('beforeend', renderTip(tip));
+  if (label) label.style.display = 'block';
+}
+
+async function loadTips() {
+  try {
+    const tips = await fetch('/api/tips').then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    tips.forEach(injectTip);
+  } catch {
+    document.getElementById('previewBanner').classList.add('show');
+  }
+}
+
+async function deleteTip(id) {
+  try {
+    await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    document.getElementById(id)?.remove();
+  } catch { alert('Kon tip niet verwijderen.'); }
+}
+
+async function submitTip() {
+  const input = document.getElementById('tipInput').value.trim();
+  if (!input) return;
+  const btn = document.getElementById('tipBtn');
+  const status = document.getElementById('tipStatus');
+  btn.disabled = true;
+  status.textContent = '⏳ AI verwerkt je tip…';
+  try {
+    const r = await fetch('/api/tips', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    const tip = await r.json();
+    injectTip(tip);
+    const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
+    if (card && !card.classList.contains('open')) toggle(card);
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    status.textContent = `✓ Toegevoegd aan "${tip.dayTitle}"`;
+    document.getElementById('tipInput').value = '';
+    setTimeout(closePanel, 1800);
+  } catch (e) {
+    status.textContent = '⚠️ Fout: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────
+document.querySelectorAll('.day-body').forEach(body => {
+  const card = body.closest('[data-day-id]');
+  const dayId = card?.dataset.dayId || 'onbekend';
+
+  // AI tips container
+  const label = document.createElement('div');
+  label.className = 'ai-tips-label';
+  label.textContent = '🌿 Tips van de community';
+  const container = document.createElement('div');
+  container.className = 'ai-tips-container';
+  body.appendChild(label);
+  body.appendChild(container);
+
+  // Notes
+  const saved = loadNotes()[dayId] || '';
+  const section = document.createElement('div');
+  section.className = 'notes-section';
+  section.innerHTML = `
+    <div class="notes-label">✏️ Mijn notities</div>
+    <textarea class="notes-textarea" placeholder="Persoonlijke notities, boekingen, herinneringen…">${saved}</textarea>
+    <div class="notes-save-row">
+      <span class="notes-saved-msg">✓ Opgeslagen</span>
+      <button class="notes-save-btn" onclick="saveNoteFor(this,'${dayId}')">Opslaan</button>
+    </div>`;
+  body.appendChild(section);
+});
+
+// Stop event propagation for inner interactive areas
+document.addEventListener('click', e => {
+  if (e.target.closest('.notes-section') || e.target.closest('.ai-tips-container') || e.target.closest('.ai-tips-label'))
+    e.stopPropagation();
+}, true);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (e.target.classList.contains('notes-textarea'))
+      e.target.closest('.notes-section').querySelector('.notes-save-btn').click();
+    if (e.target.id === 'tipInput') submitTip();
+  }
+});
+
+loadTips();
+</script>
+</body>
+</html>
