@@ -3,26 +3,26 @@
 
 const DAYS = [
   { id: 'dag-01',    title: 'Dordrecht → Schluchsee',         tags: 'Zwarte Woud, bos, herfst, Freiburg, Duitsland, A16' },
-  { id: 'dag-02-03', title: 'Zwarte Woud — 2 nachten',        tags: 'Feldberg, Titisee, bospaden, wandeling, herfstkleuren, kasteel' },
+  { id: 'dag-02-03', title: 'Zwarte Woud — 2 nachten',        tags: 'Feldberg, Titisee, bospaden, wandeling, herfstkleuren' },
   { id: 'dag-04',    title: 'Schluchsee → Karwendel',         tags: 'Tirol, Oostenrijk, Achensee, naturpark, Scharnitz, Inn' },
-  { id: 'dag-05-06', title: 'Karwendel — 2 nachten',          tags: 'Gleirschklamm, Isar-bron, kloof, wildlife, herten, brullen, beek' },
+  { id: 'dag-05-06', title: 'Karwendel — 2 nachten',          tags: 'Gleirschklamm, Isar-bron, kloof, wildlife, herten, beek' },
   { id: 'dag-07',    title: 'Dolomieten — Pragser Wildsee',   tags: 'Braies, bergmeer, smaragdgroen, Toblach, Dobbiaco, Zuid-Tirol' },
   { id: 'dag-08',    title: 'Tre Cime di Lavaredo',           tags: 'rondwandeling, tolweg, rotsen, 9.5km, 550hm, Rifugio Auronzo' },
   { id: 'dag-09-10', title: 'Fanes-Sennes NP — 2 nachten',   tags: 'Alta Badia, plateau, 2100m, Corvara, Colfosco, bergvijver' },
   { id: 'dag-11',    title: 'Dolomieten → Gardameer',         tags: 'Riva del Garda, Etschtal, Trento, meer, Brenner, Cortina' },
-  { id: 'dag-12-13', title: "Val d'Orcia — 2 nachten",        tags: 'Toscane, Crete Senesi, cipressen, Pienza, Montalcino, agriturismo, cappella' },
-  { id: 'dag-14-15', title: 'Monte Amiata — 2 nachten',       tags: 'vulkaan, kastanjes, Saturnia, thermaalwater, paddenstoelen, cascatelle' },
-  { id: 'dag-16-17', title: 'Maremma NP — 2 nachten',        tags: 'Uccellina, wilde paarden, kust, strand, kliffen, Alberese, maquis' },
-  { id: 'dag-18-19', title: 'Cinque Terre — Alta Via',        tags: 'La Spezia, kustpad, Portovenere, Framura, Ligurië, dorpjes, trein' },
-  { id: 'dag-20-21', title: 'Apennijnen NP',                  tags: 'Pietra di Bismantova, tafelberg, beuken, Castelnovo, Dante, wandeling' },
-  { id: 'dag-22-23', title: 'Parco del Cilento',              tags: 'UNESCO, Gole del Calore, Castelcivita, grotten, rivier, onbekend' },
-  { id: 'dag-24',    title: 'Cilento → Pompei-omgeving',      tags: 'Golf van Salerno, kustweg, Vesuvius in zicht, opgraving, Pompei' },
+  { id: 'dag-12-13', title: "Val d'Orcia — 2 nachten",        tags: 'Toscane, Crete Senesi, cipressen, Pienza, Montalcino, agriturismo' },
+  { id: 'dag-14-15', title: 'Monte Amiata — 2 nachten',       tags: 'vulkaan, kastanjes, Saturnia, thermaalwater, paddenstoelen' },
+  { id: 'dag-16-17', title: 'Maremma NP — 2 nachten',        tags: 'Uccellina, wilde paarden, kust, strand, kliffen, Alberese' },
+  { id: 'dag-18-19', title: 'Cinque Terre — Alta Via',        tags: 'La Spezia, kustpad, Portovenere, Framura, Ligurië, dorpjes' },
+  { id: 'dag-20-21', title: 'Apennijnen NP',                  tags: 'Pietra di Bismantova, tafelberg, beuken, Castelnovo, Dante' },
+  { id: 'dag-22-23', title: 'Parco del Cilento',              tags: 'UNESCO, Gole del Calore, Castelcivita, grotten, rivier' },
+  { id: 'dag-24',    title: 'Cilento → Pompei-omgeving',      tags: 'Golf van Salerno, kustweg, Vesuvius, opgraving, Pompei' },
   { id: 'dag-25',    title: 'Vesuvius wandeling',             tags: 'vulkaankrater, 1281m, 600hm, uitzicht, Golf van Napels, Capri' },
   { id: 'dag-26',    title: 'Pompei → Amalfikust',            tags: 'Salerno, SS163, boot, ferry, Amalfi, Vietri sul Mare' },
   { id: 'dag-27',    title: 'Sentiero degli Dei',             tags: 'Pad der Goden, 7.5km, Bomerano, Nocelle, Positano, kustpad' },
   { id: 'dag-28-29', title: 'Terugreis — 2 rijdagen',         tags: 'Bologna, Lago Maggiore, A1 northbound, Fondotoce, snelweg' },
-  { id: 'dag-30',    title: 'Lago Maggiore → Basel/Freiburg', tags: 'Gotthard, tunnel, Zwitserland, Luzern, vignette, Basel, A9' },
-  { id: 'dag-31',    title: 'Freiburg → Dordrecht',           tags: 'A5, Karlsruhe, Nederland, thuis, laatste etappe, A67, Venlo' },
+  { id: 'dag-30',    title: 'Lago Maggiore → Basel/Freiburg', tags: 'Gotthard, tunnel, Zwitserland, Luzern, vignette, Basel' },
+  { id: 'dag-31',    title: 'Freiburg → Dordrecht',           tags: 'A5, Karlsruhe, Nederland, thuis, laatste etappe, A67' },
 ];
 
 const BIN   = () => `https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}`;
@@ -46,7 +46,7 @@ async function putBin(data) {
   });
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -130,4 +130,4 @@ Antwoord UITSLUITEND als valide JSON, geen markdown, geen uitleg:
   }
 
   return res.status(405).end();
-}
+};
