@@ -65,6 +65,9 @@
   .box-scenic{background:#fdf4e0;border-left:3px solid #d9a83a;color:var(--mid);}
   .box-scenic strong{color:#b8821a;}
   .tag-scenic{background:#fbe8c0;color:#a8701a;}
+  .day-map-wrap{margin-top:.9rem;height:155px;overflow:hidden;border-radius:2px;background:#e8e2d5;position:relative;}
+  .day-map-wrap iframe{width:100%;height:100%;border:none;display:block;}
+  .day-map-wrap::after{content:'© OpenStreetMap';position:absolute;bottom:3px;right:5px;font-size:.58rem;color:rgba(0,0,0,.45);pointer-events:none;}
 
   /* AI TIPS */
   .ai-tips-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--olive);margin-top:1rem;margin-bottom:.3rem;display:none;}
@@ -506,12 +509,59 @@
 </div>
 
 <script>
+const DAY_MAPS = {
+  'dag-01':    [47.27,  11.39,  6],
+  'dag-02':    [46.694, 12.085, 11],
+  'dag-03':    [46.619, 12.303, 11],
+  'dag-04-05': [46.549, 11.874, 10],
+  'dag-06':    [45.5,   11.0,    6],
+  'dag-07-08': [43.05,  11.62,  10],
+  'dag-09-10': [42.888, 11.624, 10],
+  'dag-11-12': [42.641, 11.086, 10],
+  'dag-13':    [41.0,   14.0,    7],
+  'dag-14-15': [40.039, 15.291, 10],
+  'dag-16':    [40.751, 14.489, 11],
+  'dag-17':    [40.821, 14.429, 11],
+  'dag-18':    [40.65,  14.75,  11],
+  'dag-19':    [40.627, 14.484, 11],
+  'dag-20':    [41.2,   15.8,    7],
+  'dag-21-22': [41.882, 16.173, 10],
+  'dag-23':    [40.814, 16.418, 10],
+  'dag-24':    [40.814, 16.418, 10],
+  'dag-25-26': [40.144, 18.491, 10],
+  'dag-27':    [40.731, 17.423, 10],
+  'dag-28':    [41.2,   15.0,    6],
+  'dag-29':    [43.5,   12.0,    7],
+  'dag-30':    [46.5,    8.5,    7],
+  'dag-31':    [50.0,    6.5,    6],
+};
+
+function mapUrl(lat, lon, zoom) {
+  const d = {5:5,6:3,7:1.5,8:0.75,9:0.35,10:0.18,11:0.09}[zoom]||0.2;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}`;
+}
+
+function injectMap(card) {
+  const id = card.dataset.dayId;
+  if (!DAY_MAPS[id] || card.querySelector('.day-map-wrap')) return;
+  const [lat, lon, zoom] = DAY_MAPS[id];
+  const wrap = document.createElement('div');
+  wrap.className = 'day-map-wrap';
+  const iframe = document.createElement('iframe');
+  iframe.src = mapUrl(lat, lon, zoom);
+  iframe.title = 'Locatiekaart';
+  iframe.loading = 'lazy';
+  wrap.appendChild(iframe);
+  card.querySelector('.day-body').prepend(wrap);
+}
+
 function toggle(card, e) {
   if (e && e.target.closest('.notes-section, .ai-tips-container, .ai-tips-label, .ai-tip-del, .panel-close, .fab')) return;
   const body = card.querySelector('.day-body');
   const open = !body.classList.contains('open');
   body.classList.toggle('open', open);
   card.classList.toggle('open', open);
+  if (open) injectMap(card);
 }
 
 let allOpen = false;
