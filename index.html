@@ -595,7 +595,7 @@ async function submitTip() {
     const r = await fetch('/api/tips', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input }),
+      body: JSON.stringify({ input, password }),
     });
     if (!r.ok) throw new Error((await r.json()).error || r.status);
     const tip = await r.json();
@@ -605,6 +605,7 @@ async function submitTip() {
     card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     status.textContent = `✓ Toegevoegd aan "${tip.dayTitle}"`;
     document.getElementById('tipInput').value = '';
+    document.getElementById('tipPassword').value = '';
     setTimeout(closePanel, 1800);
   } catch (e) {
     status.textContent = '⚠️ Fout: ' + e.message;
