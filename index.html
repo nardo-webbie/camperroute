@@ -509,6 +509,7 @@
 </div>
 
 <script>
+// ─── Kaart per dag ───────────────────────────────────────────
 const DAY_MAPS = {
   'dag-01':    [47.27,  11.39,  6],
   'dag-02':    [46.694, 12.085, 11],
@@ -537,7 +538,7 @@ const DAY_MAPS = {
 };
 
 function mapUrl(lat, lon, zoom) {
-  const d = {5:5,6:3,7:1.5,8:0.75,9:0.35,10:0.18,11:0.09}[zoom]||0.2;
+  const d = {5:5,6:3,7:1.5,8:0.75,9:0.35,10:0.18,11:0.09}[zoom] || 0.2;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}`;
 }
 
@@ -555,6 +556,7 @@ function injectMap(card) {
   card.querySelector('.day-body').prepend(wrap);
 }
 
+// ─── Card toggle ─────────────────────────────────────────────
 function toggle(card, e) {
   if (e && e.target.closest('.notes-section, .ai-tips-container, .ai-tips-label, .ai-tip-del, .panel-close, .fab')) return;
   const body = card.querySelector('.day-body');
@@ -572,6 +574,7 @@ function toggleAll() {
   document.querySelector('.ctrl-btn').textContent = allOpen ? 'Alles inklappen' : 'Alles uitklappen';
 }
 
+// ─── Notes (localStorage) ────────────────────────────────────
 const NOTES_KEY = 'camperroute_notes';
 function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch { return {}; } }
 function saveNote(k, v) { const n = loadNotes(); n[k] = v; localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
@@ -583,6 +586,7 @@ function saveNoteFor(btn, dayId) {
   setTimeout(() => msg.classList.remove('show'), 2000);
 }
 
+// ─── Panel ───────────────────────────────────────────────────
 function openPanel() {
   document.getElementById('overlay').classList.add('open');
   document.getElementById('tipPanel').classList.add('open');
@@ -593,6 +597,7 @@ function closePanel() {
   document.getElementById('tipPanel').classList.remove('open');
 }
 
+// ─── AI Tips ─────────────────────────────────────────────────
 function renderTip(tip) {
   const date = new Date(tip.ts).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
   const preview = tip.userInput.length > 45 ? tip.userInput.slice(0, 45) + '…' : tip.userInput;
@@ -613,6 +618,26 @@ function injectTip(tip) {
   if (label) label.style.display = 'block';
 }
 
+async function loadTips() {
+  try {
+    const tips = await fetch('/api/tips').then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    tips.forEach(injectTip);
+  } catch {
+    document.getElementById('previewBanner').classList.add('show');
+  }
+}
+
+async function deleteTip(id) {
+  if (!confirm('Tip verwijderen?')) return;
+  const el = document.getElementById(id);
+  try {
+    const r = await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error(`Server: ${r.status}`);
+    el?.remove();
+  } catch (e) {
+    alert('Kon tip niet verwijderen: ' + e.message);
+  }
+}
 
 async function submitTip() {
   const elInput = document.getElementById('tipInput');
@@ -623,12 +648,11 @@ async function submitTip() {
   const inputVal = elInput ? elInput.value.trim() : '';
   const pwVal    = elPw    ? elPw.value           : '';
 
-  if (!inputVal) { status.textContent = '⚠️ Voer een tip in';       return; }
+  if (!inputVal) { status.textContent = '⚠️ Voer een tip in';        return; }
   if (!pwVal)    { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
 
   btn.disabled = true;
   status.textContent = '⏳ AI verwerkt je tip…';
-
   try {
     const r = await fetch('/api/tips', {
       method: 'POST',
@@ -652,51 +676,10 @@ async function submitTip() {
   }
 }
 
-async function deleteTip(id) {
-  if (!confirm('Tip verwijderen?')) return;
-  const el = document.getElementById(id);
-  try {
-    const r = await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (!r.ok) throw new Error(`Server: ${r.status}`);
-    el?.remove();
-  } catch (e) {
-    alert('Kon tip niet verwijderen: ' + e.message);
-  }
-}
-
-async function submitTip() {
-  const input = document.getElementById('tipInput').value.trim();
-  if (!input) return;
-  const btn = document.getElementById('tipBtn');
-  const status = document.getElementById('tipStatus');
-  btn.disabled = true;
-  status.textContent = '⏳ AI verwerkt je tip…';
-  try {
-    const r = await fetch('/api/tips', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input, password: pw }),
-    });
-    if (!r.ok) throw new Error((await r.json()).error || r.status);
-    const tip = await r.json();
-    injectTip(tip);
-    const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
-    if (card && !card.classList.contains('open')) toggle(card, null);
-    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    status.textContent = `✓ Toegevoegd aan "${tip.dayTitle}"`;
-    document.getElementById('tipInput').value = '';
-    document.getElementById('tipPassword').value = '';
-    setTimeout(closePanel, 1800);
-  } catch (e) {
-    status.textContent = '⚠️ Fout: ' + e.message;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// Init: voeg AI tips container + notes toe aan elke day-body
+// ─── Init ────────────────────────────────────────────────────
 document.querySelectorAll('.day-body').forEach(body => {
   const dayId = body.closest('[data-day-id]')?.dataset.dayId || 'onbekend';
+
   const label = document.createElement('div');
   label.className = 'ai-tips-label';
   label.textContent = '🌿 Tips van de community';
