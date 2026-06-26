@@ -613,12 +613,42 @@ function injectTip(tip) {
   if (label) label.style.display = 'block';
 }
 
-async function loadTips() {
+
+async function submitTip() {
+  const elInput = document.getElementById('tipInput');
+  const elPw    = document.getElementById('tipPassword');
+  const btn     = document.getElementById('tipBtn');
+  const status  = document.getElementById('tipStatus');
+
+  const inputVal = elInput ? elInput.value.trim() : '';
+  const pwVal    = elPw    ? elPw.value           : '';
+
+  if (!inputVal) { status.textContent = '⚠️ Voer een tip in';       return; }
+  if (!pwVal)    { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
+
+  btn.disabled = true;
+  status.textContent = '⏳ AI verwerkt je tip…';
+
   try {
-    const tips = await fetch('/api/tips').then(r => { if (!r.ok) throw new Error(); return r.json(); });
-    tips.forEach(injectTip);
-  } catch {
-    document.getElementById('previewBanner').classList.add('show');
+    const r = await fetch('/api/tips', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: inputVal, password: pwVal }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    const tip = await r.json();
+    injectTip(tip);
+    const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
+    if (card && !card.classList.contains('open')) toggle(card, null);
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    status.textContent = `✓ Toegevoegd aan "${tip.dayTitle}"`;
+    elInput.value = '';
+    elPw.value    = '';
+    setTimeout(closePanel, 1800);
+  } catch (e) {
+    status.textContent = '⚠️ Fout: ' + e.message;
+  } finally {
+    btn.disabled = false;
   }
 }
 
