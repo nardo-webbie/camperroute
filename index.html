@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Camperroute Dordrecht → Puglia · Natuur</title>
+<title>Camperroutes · Dordrecht op reis</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
+
+  .trip-view[data-theme="italy"]{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--parchment);color:var(--ink);font-family:'Outfit',sans-serif;font-weight:300;line-height:1.65;min-height:100vh;}
   header{background:var(--ink);color:var(--parchment);padding:3.5rem 2rem 3rem;text-align:center;position:relative;overflow:hidden;}
@@ -120,10 +121,123 @@
   .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
   .dot-drive{background:var(--rust-light);}
   .dot-rest{background:var(--olive-light);}
+
+
+  .trip-view[data-theme="england"] {
+    --ink: #12201c;
+    --parchment: #eef2e4;
+    --warm: #f8faf3;
+    --rust: #2a6b5c;
+    --rust-light: #3f8a76;
+    --gold: #8a9a3a;
+    --gold-light: #a8ba54;
+    --olive: #3a5a7a;
+    --olive-light: #5a80a8;
+    --stone: #5a6a5a;
+    --border: #cdd8bc;
+    --mid: #2e3e30;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--parchment); color: var(--ink); font-family: 'Outfit', sans-serif; font-weight: 300; line-height: 1.65; min-height: 100vh; }
+  header { background: var(--ink); color: var(--parchment); padding: 3.5rem 2rem 3rem; text-align: center; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 75% 30%, rgba(42,107,92,0.35) 0%, transparent 55%), radial-gradient(ellipse at 15% 70%, rgba(138,154,58,0.25) 0%, transparent 45%), radial-gradient(ellipse at 50% 100%, rgba(58,90,122,0.2) 0%, transparent 50%); }
+  .header-label { font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.8rem; position: relative; }
+  header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 300; letter-spacing: 0.04em; line-height: 1.1; position: relative; }
+  header h1 em { font-style: italic; color: var(--rust-light); }
+  .header-divider { width: 60px; height: 1px; background: var(--gold); margin: 1.2rem auto; position: relative; }
+  .header-meta { font-size: 0.85rem; color: rgba(238,242,228,0.65); letter-spacing: 0.08em; position: relative; }
+  .juni-bar { background: var(--gold); color: var(--ink); text-align: center; padding: 0.7rem 1.5rem; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.06em; }
+  .specs-bar { background: var(--rust); color: var(--parchment); display: flex; justify-content: center; gap: 0 2.5rem; padding: 0.9rem 2rem; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; flex-wrap: wrap; row-gap: 0.4rem; }
+  .container { max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+  .controls { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+  .ctrl-btn { background: none; border: 1px solid var(--border); color: var(--stone); font-family: 'Outfit', sans-serif; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.45rem 1rem; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+  .ctrl-btn:hover, .ctrl-btn.active { background: var(--rust); border-color: var(--rust); color: white; }
+  .phase-header { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 1rem; }
+  .phase-label { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.5rem; color: var(--rust); white-space: nowrap; }
+  .phase-line { flex: 1; height: 1px; background: var(--border); }
+  .phase-days { font-size: 0.75rem; color: var(--stone); white-space: nowrap; }
+  .day-card { background: var(--warm); border: 1px solid var(--border); margin-bottom: 0.85rem; overflow: hidden; transition: box-shadow 0.25s, transform 0.15s; cursor: pointer; }
+  .day-card:hover { box-shadow: 0 6px 24px rgba(18,32,28,0.1); transform: translateY(-1px); }
+  .day-header { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; padding: 1rem 1.25rem; gap: 1rem; user-select: none; }
+  .day-num { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--border); text-align: center; line-height: 1; }
+  .day-title { font-weight: 500; font-size: 0.93rem; color: var(--ink); }
+  .day-sub { font-size: 0.78rem; color: var(--stone); margin-top: 0.15rem; }
+  .day-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; }
+  .day-km { font-weight: 500; color: var(--rust); font-size: 0.88rem; }
+  .day-type { font-size: 0.7rem; color: var(--stone); letter-spacing: 0.05em; }
+  .chevron { font-size: 0.65rem; color: var(--border); transition: transform 0.2s; margin-top: 0.2rem; }
+  .day-card.open .chevron { transform: rotate(180deg); }
+  .day-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .day-body.open { display: block; }
+  .day-body p { font-size: 0.87rem; color: var(--mid); margin-top: 0.9rem; line-height: 1.75; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.85rem; }
+  .tag { font-size: 0.68rem; padding: 0.2rem 0.65rem; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+  .tag-hond { background: #e2ecd8; color: var(--gold); }
+  .tag-camper { background: #dcece6; color: var(--rust); }
+  .tag-wandel { background: #dce6f0; color: var(--olive); }
+  .tag-rust { background: #e8ece0; color: var(--stone); }
+  .tag-stad { background: #ece0f0; color: #6a4a80; }
+  .tag-juni { background: #eef0d0; color: #7a8a2a; }
+  .tag-ferry { background: #d8ecec; color: #2a7a7a; }
+  .info-box { padding: 0.8rem 1rem; margin-top: 0.85rem; font-size: 0.83rem; border-radius: 0 2px 2px 0; line-height: 1.6; }
+  .box-tip { background: #eef2e0; border-left: 3px solid var(--gold); color: var(--mid); }
+  .box-tip strong { color: var(--gold); }
+  .box-camper { background: #e2ece6; border-left: 3px solid var(--rust); color: var(--mid); }
+  .box-camper strong { color: var(--rust); }
+  .box-juni { background: #f0f0d8; border-left: 3px solid var(--gold-light); color: var(--mid); }
+  .box-juni strong { color: var(--gold); }
+  .box-warn { background: #f0e4e0; border-left: 3px solid #a85a3a; color: var(--mid); }
+  .box-warn strong { color: #a85a3a; }
+  .box-community { background: #e0e8f0; border-left: 3px solid var(--olive); color: var(--mid); }
+  .box-community strong { color: var(--olive); }
+  .box-park { background: #dde8d4; border-left: 3px solid #4a7a3a; color: var(--mid); }
+  .box-park strong { color: #4a7a3a; }
+  .box-hike { background: #dde4ec; border-left: 3px solid var(--olive); color: var(--mid); }
+  .box-hike strong { color: var(--olive); }
+  .park-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.4rem 1rem; margin-top: 0.5rem; font-size: 0.8rem; }
+  .park-facts div span { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--stone); }
+  .totals { background: var(--ink); color: var(--parchment); padding: 2rem 1.5rem; margin-top: 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1.5rem; text-align: center; position: relative; overflow: hidden; }
+  .totals::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(42,107,92,0.25) 0%, transparent 60%); }
+  .total-item { position: relative; }
+  .total-val { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; color: var(--gold-light); line-height: 1; }
+  .total-lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(238,242,228,0.5); margin-top: 0.3rem; }
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem; font-size: 0.75rem; color: var(--stone); }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot-drive { background: var(--rust-light); }
+  .dot-rest { background: var(--gold-light); }
+
+  /* Derde thema voor zelf-toegevoegde reizen */
+  .trip-view[data-theme="ocean"]{--ink:#0f1f26;--parchment:#e8f0ee;--warm:#f5faf9;--rust:#2a6b6b;--rust-light:#3f8a8a;--gold:#4a8a5a;--gold-light:#6aae7a;--olive:#2a5a7a;--olive-light:#4a80a8;--stone:#5a6e6a;--border:#c8dcd6;--mid:#1e3a38;}
+
+  /* Tabbar */
+  .tabbar{position:sticky;top:0;z-index:60;display:flex;gap:.4rem;background:#141414;padding:.6rem .8rem;overflow-x:auto;box-shadow:0 2px 10px rgba(0,0,0,.25);}
+  .tab-btn{background:none;border:1px solid rgba(255,255,255,.18);color:#cfc9bd;font-family:'Outfit',sans-serif;font-size:.82rem;padding:.5rem 1rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .tab-btn:hover{border-color:rgba(255,255,255,.4);}
+  .tab-btn.active{background:#fff;color:#141414;border-color:#fff;font-weight:500;}
+  .tab-add{font-size:1rem;padding:.5rem .85rem;}
+  .trip-view{display:none;}
+  .trip-view.active{display:block;}
+
+  /* Nieuwe reis form */
+  .form-row{margin-top:.9rem;}
+  .form-row label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--stone,#7a6a55);margin-bottom:.3rem;}
+  .form-row input[type=text], .form-row select{width:100%;padding:.6rem .7rem;border:1px solid #ddd0b8;border-radius:3px;font-family:'Outfit',sans-serif;font-size:.87rem;background:#faf6ee;}
+  .radio-group{display:flex;gap:1.2rem;font-size:.85rem;}
+  .radio-group label{display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-size:.85rem;margin:0;}
+
 </style>
 </head>
 <body>
 
+<nav class="tabbar" id="tabbar">
+  <button class="tab-btn active" data-tab="italy" onclick="switchTab('italy')">🇮🇹 Italië</button>
+  <button class="tab-btn" data-tab="england" onclick="switchTab('england')">🇬🇧 Engeland</button>
+  <span id="customTabs"></span>
+  <button class="tab-btn tab-add" onclick="openNewTripPanel()" title="Nieuwe reis toevoegen">＋</button>
+</nav>
+
+<div class="trip-view active" data-trip="italy" data-theme="italy">
 <header>
   <div class="header-label">Camperreis · Oktober 2025 · Natuur-editie</div>
   <h1>Dordrecht <em>naar</em><br>Puglia</h1>
@@ -140,8 +254,7 @@
 </div>
 
 <div class="container">
-  <div id="previewBanner" class="preview-banner">⚠️ <strong>Preview-modus:</strong> AI-tips werken na deployment op Vercel.</div>
-  <div class="controls"><button class="ctrl-btn" onclick="toggleAll()">Alles uitklappen</button></div>
+  <div class="controls"><button class="ctrl-btn" onclick="toggleAll(this)">Alles uitklappen</button></div>
   <div class="legend">
     <div class="legend-item"><div class="dot dot-drive"></div> Rijdag</div>
     <div class="legend-item"><div class="dot dot-rest"></div> Rustdag / verblijf</div>
@@ -493,24 +606,545 @@
   </div>
 </div>
 
+</div>
+
+<div class="trip-view" data-trip="england" data-theme="england">
+<header>
+  <div class="header-label">Camperreis · Juni 2027</div>
+  <h1>Dordrecht <em>naar</em><br>Engeland</h1>
+  <div class="header-divider"></div>
+  <p class="header-meta">21 dagen · Met hond · 6m camper · 2,52m hoog · P&amp;O Ferries Calais–Dover</p>
+</header>
+
+<div class="juni-bar">
+  ☀️ Juni-editie — lange dagen, nog vóór de schoolvakantie, ideaal groen landschap na de lente
+</div>
+
+<div class="specs-bar">
+  <span>🚐 6m lang · 2,52m hoog</span>
+  <span>🐕 Hondvriendelijk</span>
+  <span>📅 21 dagen · Juni</span>
+  <span>🛣️ ~2.600 km totaal</span>
+  <span>⛴️ P&amp;O Ferries Calais–Dover</span>
+</div>
+
+<div class="container">
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="toggleAll(this)">Alles uitklappen</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot dot-drive"></div> Rijdag</div>
+    <div class="legend-item"><div class="dot dot-rest"></div> Rustdag / verblijf</div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div class="phase-header"><span class="phase-label">Fase 1 — Heen &amp; Zuidoost</span><div class="phase-line"></div><span class="phase-days">Dag 1–4</span></div>
+
+  <div class="day-card" data-day="1" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">01</div>
+      <div><div class="day-title">🔴 Dordrecht → Calais → Canterbury</div><div class="day-sub">P&amp;O Ferries · Kent</div></div>
+      <div class="day-right"><div class="day-km">~230 km + overtocht</div><div class="day-type">±3,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A16 door België naar Calais. Neem de P&amp;O Ferries-overtocht Calais–Dover (ca. 90 minuten, meerdere afvaarten per dag). Honden mogen tijdens de overtocht in de camper op het autodek blijven of, bij sommige schepen, mee naar het buitendek. Na aankomst in Dover direct wennen aan linksrijden op de rustige wegen van Kent naar Canterbury.</p>
+      <div class="tags"><span class="tag tag-ferry">P&amp;O Ferries Calais–Dover</span><span class="tag tag-hond">Hond aan boord toegestaan</span><span class="tag tag-camper">Linksrijden wennen</span></div>
+      <div class="box-warn info-box"><strong>Let op:</strong> Boek de P&amp;O-overtocht ruim vooraf en geef de juiste voertuighoogte (2,52m) en lengte (6m) door — dit bepaalt de prijscategorie.</div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping and Caravanning Club Site Canterbury — hondvriendelijk, ruime pitches, 20 min lopen naar centrum.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="2" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">02</div>
+      <div><div class="day-title">🟢 Rustdag Canterbury</div><div class="day-sub">Kathedraal · Kentse kust</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandel door het historische centrum en bezoek Canterbury Cathedral (UNESCO). 's Middags optioneel naar de witte kliffen bij Dover of het strand van Whitstable voor oesters en een wandeling langs de boulevard.</p>
+      <div class="tags"><span class="tag tag-rust">Rustdag</span><span class="tag tag-stad">Canterbury Cathedral</span><span class="tag tag-hond">Strand Whitstable</span></div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="3" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">03</div>
+      <div><div class="day-title">🔴 Canterbury → Cotswolds</div><div class="day-sub">Bourton-on-the-Water</div></div>
+      <div class="day-right"><div class="day-km">~230 km</div><div class="day-type">±3,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Rondje Londen mijden via de M25 (of vroeg rijden tegen de spits) richting de Cotswolds. De honingkleurige dorpjes van natuursteen zijn in juni op hun mooist met bloeiende tuinen. Bourton-on-the-Water als eerste basis.</p>
+      <div class="tags"><span class="tag tag-camper">M25 ring mijden in de spits</span><span class="tag tag-juni">Bloeiende tuinen</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Folly Farm Touring Caravan &amp; Campsite (Bourton-on-the-Water) — hondvriendelijk, rustig, dichtbij dorp.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="4" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">04</div>
+      <div><div class="day-title">🟢 Rustdag Cotswolds</div><div class="day-sub">Bibury · Stow-on-the-Wold</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Dagje dorpjes hoppen: Bibury (Arlington Row), Stow-on-the-Wold en Upper/Lower Slaughter. De Cotswold Way is uitstekend hondvriendelijk, mits aan de lijn bij schapen.</p>
+      <div class="tags"><span class="tag tag-wandel">Cotswold Way</span><span class="tag tag-hond">Aan de lijn bij schapen</span><span class="tag tag-juni">Lange lichte avonden</span></div>
+    </div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div class="phase-header"><span class="phase-label">Fase 2 — Zuidwest-Engeland</span><div class="phase-line"></div><span class="phase-days">Dag 5–12</span></div>
+
+  <div class="day-card" data-day="5" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">05</div>
+      <div><div class="day-title">🔴 Cotswolds → Bath → New Forest</div><div class="day-sub">Via Stonehenge</div></div>
+      <div class="day-right"><div class="day-km">~200 km</div><div class="day-type">±3,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Ochtend in Bath — Georgian architectuur en de Royal Crescent. Onderweg een stop bij Stonehenge (camperparkeerplaats aanwezig, tickets online boeken). Aankomst New Forest National Park in de avond.</p>
+      <div class="tags"><span class="tag tag-stad">Bath</span><span class="tag tag-stad">Stonehenge</span><span class="tag tag-camper">Reserveer tickets vooraf</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Hollands Wood Campsite (Forestry England, New Forest) — wilde pony's lopen vrij rond, hondvriendelijk.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="6" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">06</div>
+      <div><div class="day-title">🟢 Rustdag New Forest</div><div class="day-sub">Wandelen tussen wilde pony's</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Uitgestrekte heide en bossen, uitstekend voor lange loslooproutes met de hond (let op grazende pony's). Lyndhurst als centrum voor koffie en boodschappen.</p>
+      <div class="tags"><span class="tag tag-wandel">Heide en bos</span><span class="tag tag-hond">Los lopen mogelijk</span><span class="tag tag-rust">Rustdag</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: New Forest</strong><br>
+        Een van de jongste nationale parken van Engeland — pas in 2005 aangewezen, maar het gebied wordt al sinds 1079 beschermd als koninklijk jachtgebied van Willem de Veroveraar. Zo'n 5.000 wilde pony's, runderen en herten lopen er vrij rond dankzij eeuwenoude "verderers"-rechten. Nooit voeren of aaien: het zijn wilde dieren, geen huisdieren.
+        <div class="park-facts">
+          <div><span>Opgericht</span>2005</div>
+          <div><span>Oppervlakte</span>566 km²</div>
+          <div><span>Hoogste punt</span>129 m</div>
+          <div><span>Bijzonderheid</span>Wilde pony's sinds 1079</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Lyndhurst Circular</strong><br>
+        Een afwisselende route van 12,3 km die start en eindigt in Lyndhurst, het "hoofdstadje" van de New Forest. De route doorkruist heide, moerasjes, oude bossen en open velden — typisch voor het "commoning"-landschap waar vee en pony's vrij grazen. Goede kans op reeën en roofvogels zoals haviden en torenvalken.
+        <div class="park-facts">
+          <div><span>Afstand</span>12,3 km</div>
+          <div><span>Duur</span>±3,25 uur</div>
+          <div><span>Start</span>Lyndhurst centrum</div>
+          <div><span>Terrein</span>Heide, bos, open veld</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="7" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">07</div>
+      <div><div class="day-title">🔴 New Forest → Jurassic Coast</div><div class="day-sub">Lyme Regis · Dorset</div></div>
+      <div class="day-right"><div class="day-km">~110 km</div><div class="day-type">±1,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Korte rijdag naar de Jurassic Coast (UNESCO), met Lyme Regis als basis. Ruime tijd om onderweg te stoppen of eerder aan te komen en al te verkennen.</p>
+      <div class="tags"><span class="tag tag-camper">Korte rijdag</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Wood Farm Caravan &amp; Camping Park (Charmouth) — hondvriendelijk, dicht bij het strand met fossielen.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="8" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">08</div>
+      <div><div class="day-title">🟢 Rustdag Jurassic Coast</div><div class="day-sub">Lyme Regis · Durdle Door</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Fossielen zoeken op het strand van Lyme Regis en 's middags een uitstapje naar Durdle Door en Lulworth Cove.</p>
+      <div class="tags"><span class="tag tag-wandel">Durdle Door</span><span class="tag tag-hond">Strand toegankelijk</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ UNESCO Werelderfgoed: Jurassic Coast</strong><br>
+        Geen nationaal park, maar sinds 2001 UNESCO Werelderfgoed — Engelands enige natuurlijke werelderfgoedlocatie. De 155 km kustlijn tussen Exmouth en Studland legt 185 miljoen jaar aardgeschiedenis bloot: van Trias-rode kliffen bij Lyme Regis tot krijtformaties zoals Durdle Door en Old Harry Rocks. Hier werden de eerste complete ichthyosaurus-fossielen ontdekt door Mary Anning.
+        <div class="park-facts">
+          <div><span>Status sinds</span>2001</div>
+          <div><span>Kustlengte</span>155 km</div>
+          <div><span>Tijdspanne</span>185 miljoen jaar</div>
+          <div><span>Bijzonderheid</span>Fossielenkust</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Golden Cap Circular</strong><br>
+        Vanaf Charmouth via het strand naar Golden Cap (191 m), het hoogste punt aan de zuidkust van Engeland, met adembenemend uitzicht over Lyme Bay. Onderweg passeer je de ruïne van Stanton St Gabriel's kapel (vermeld in het Domesday Book van 1086) en de fossielrijke kliffen bij Black Ven. Terug via binnenlandse paden door bos en glooiend akkerland.
+        <div class="park-facts">
+          <div><span>Afstand</span>~12 km</div>
+          <div><span>Duur</span>±3,5 uur</div>
+          <div><span>Start</span>Charmouth strand</div>
+          <div><span>Hoogtepunt</span>Golden Cap, 191 m</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="9" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">09</div>
+      <div><div class="day-title">🔴 Jurassic Coast → Dartmoor</div><div class="day-sub">Nationaal park · Devon</div></div>
+      <div class="day-right"><div class="day-km">~100 km</div><div class="day-type">±1,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Korte rit westwaarts naar Dartmoor. Let op smalle "single track roads" met passeerplekken — rustig rijden en uitwijken waar nodig.</p>
+      <div class="tags"><span class="tag tag-camper">Smalle wegen op Dartmoor</span><span class="tag tag-juni">Heide begint te bloeien</span></div>
+      <div class="box-warn info-box"><strong>Let op:</strong> Blijf op de hoofdwegen (B3212, B3357) — sommige binnenwegen zijn te smal of hebben lage takken voor een 6m camper.</div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Wooder Manor Caravan &amp; Camping Park (Widecombe-in-the-Moor) — hondvriendelijk.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="10" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">10</div>
+      <div><div class="day-title">🟢 Rustdag Dartmoor</div><div class="day-sub">Haytor · Widecombe</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandeling naar Haytor Rocks en het dorpje Widecombe-in-the-Moor. Dartmoor Commons kennen een gedragscode: aan de lijn bij vee, ook buiten het lammerseizoen.</p>
+      <div class="tags"><span class="tag tag-wandel">Haytor Rocks</span><span class="tag tag-hond">Aangelijnd bij vee</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Dartmoor</strong><br>
+        Opgericht in 1951, een granieten hoogvlakte in Devon die z'n naam dankt aan de rivier de Dart. Kenmerkend zijn de "tors" — verweerde granietrotsen die als kastelen boven de heide uitsteken — en de wilde Dartmoor-pony's die er al eeuwenlang grazen. Het mysterieuze, mistige landschap inspireerde Arthur Conan Doyle tot "The Hound of the Baskervilles". Vrij kamperen (wild camping) is op delen van Dartmoor zelfs officieel toegestaan, uniek in Engeland.
+        <div class="park-facts">
+          <div><span>Opgericht</span>1951</div>
+          <div><span>Oppervlakte</span>954 km²</div>
+          <div><span>Hoogste punt</span>High Willhays, 621 m</div>
+          <div><span>Bijzonderheid</span>Granieten tors</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Haytor &amp; Hound Tor Circular</strong><br>
+        Een afwisselende route van ongeveer 10 km die drie iconische tors verbindt: Haytor Rocks, Holwell Tor en Hound Tor (bekend van de legende die Arthur Conan Doyle inspireerde tot "The Hound of the Baskervilles"). Onderweg kom je langs een verlaten middeleeuws dorpje en de oude Haytor Granite Tramway. Open moorland afgewisseld met varenvalleien — goede kans op wilde Dartmoor-pony's.
+        <div class="park-facts">
+          <div><span>Afstand</span>~10 km</div>
+          <div><span>Duur</span>±2,5 uur</div>
+          <div><span>Start</span>Haytor bezoekerscentrum</div>
+          <div><span>Terrein</span>Open moorland, rotsig</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="11" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">11</div>
+      <div><div class="day-title">🔴 Dartmoor → Pembrokeshire Coast</div><div class="day-sub">Wales</div></div>
+      <div class="day-right"><div class="day-km">~280 km</div><div class="day-type">±4 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via Exeter, Bristol en de Severn-oversteek naar Wales, dan de M4/A48 westwaarts naar het Pembrokeshire Coast National Park — dramatische kliffen, verstopte baaien en het kleinste "stadje" van Groot-Brittannië, St Davids.</p>
+      <div class="tags"><span class="tag tag-camper">Severn-oversteek</span><span class="tag tag-stad">St Davids</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Caerfai Bay Caravan &amp; Tent Park (bij St Davids) — hondvriendelijk, uitzicht over zee.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="12" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">12</div>
+      <div><div class="day-title">🟢 Rustdag Pembrokeshire Coast</div><div class="day-sub">Kustpad · St Davids</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandeling op het Pembrokeshire Coast Path — glooiende kliffen, zeevogels en in juni bloeiende heide. St Davids zelf is minuscuul maar heeft een prachtige kathedraal in een vallei verscholen.</p>
+      <div class="tags"><span class="tag tag-wandel">Pembrokeshire Coast Path</span><span class="tag tag-hond">Hond welkom op kustpad</span><span class="tag tag-juni">Bloeiende heide</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Pembrokeshire Coast</strong><br>
+        Opgericht in 1952 en het enige overwegend kustnationale park van Groot-Brittannië. Het 300 km lange Pembrokeshire Coast Path slingert langs enkele van de spectaculairste kliffen van Wales. Vanaf St Davids varen boten naar Skomer Island, in juni broedplaats van duizenden papegaaiduikers (puffins). Het gesteente hier behoort tot het oudste van Wales, met sporen van vulkanische activiteit van meer dan 700 miljoen jaar oud.
+        <div class="park-facts">
+          <div><span>Opgericht</span>1952</div>
+          <div><span>Oppervlakte</span>620 km²</div>
+          <div><span>Kustpad</span>300 km</div>
+          <div><span>Bijzonderheid</span>Papegaaiduikers op Skomer</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: St Davids &amp; St Non's Loop</strong><br>
+        Een route van 13 km die start en eindigt in St Davids en het Pembrokeshire Coast Path volgt via St Justinian's (met uitzicht op Ramsey Island), Porth Clais (de historische haven waar goederen voor de kathedraal werden gelost) en St Non's Chapel — de vermeende geboorteplaats van de Welshe schutspatroon David. Onderweg loop je over de oudste rotsen van Pembrokeshire, zo'n 600 miljoen jaar oud.
+        <div class="park-facts">
+          <div><span>Afstand</span>13 km</div>
+          <div><span>Duur</span>±4 uur</div>
+          <div><span>Start</span>St Davids centrum</div>
+          <div><span>Hoogtepunt</span>St Non's Chapel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div class="phase-header"><span class="phase-label">Fase 3 — Wales &amp; het Noorden</span><div class="phase-line"></div><span class="phase-days">Dag 13–18</span></div>
+
+  <div class="day-card" data-day="13" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">13</div>
+      <div><div class="day-title">🔴 Pembrokeshire → Brecon Beacons → Peak District</div><div class="day-sub">Lange rijdag, met stop in Wales</div></div>
+      <div class="day-right"><div class="day-km">~350 km</div><div class="day-type">±5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A40 dwars door het Brecon Beacons National Park (Bannau Brycheiniog) — indrukwekkende zandsteenbergen, ideaal voor een korte tussenstop of foto op weg naar het noorden. Daarna via Birmingham en de M6 verder naar de Peak District.</p>
+      <div class="tags"><span class="tag tag-camper">Lange rijdag via Wales</span><span class="tag tag-stad">Brecon Beacons</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Brecon Beacons (Bannau Brycheiniog)</strong><br>
+        Opgericht in 1957; sinds 2023 draagt het park officieel ook de Welshe naam Bannau Brycheiniog. Kenmerkend zijn de platte, tafelvormige zandsteentoppen, met Pen y Fan (886 m) als hoogste punt van Zuid-Wales. Het park is officieel een "Dark Sky Reserve" — een van de beste plekken in Groot-Brittannië om 's nachts te sterrenkijken, mocht je hier overnachten in plaats van doorrijden.
+        <div class="park-facts">
+          <div><span>Opgericht</span>1957</div>
+          <div><span>Oppervlakte</span>1.347 km²</div>
+          <div><span>Hoogste punt</span>Pen y Fan, 886 m</div>
+          <div><span>Bijzonderheid</span>Dark Sky Reserve</div>
+        </div>
+      </div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Fieldhead Campsite (Edale) — hondvriendelijk, startpunt Pennine Way.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="14" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">14</div>
+      <div><div class="day-title">🟢 Rustdag Peak District</div><div class="day-sub">Edale · Mam Tor</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandeling naar Mam Tor ("Shivering Mountain") met panoramisch uitzicht over de Hope Valley (~6 km).</p>
+      <div class="tags"><span class="tag tag-wandel">Mam Tor · 6 km</span><span class="tag tag-hond">Aan de lijn bij schapen</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Peak District</strong><br>
+        Opgericht in 1951 als allereerste nationale park van Groot-Brittannië. Het park valt uiteen in de ruige "Dark Peak" in het noorden (heide, veenmoeras, dramatische randen) en de zachtere "White Peak" in het zuiden (kalksteenvalleien, boerenland). Kinder Scout, vlakbij Edale, was in 1932 het toneel van de beroemde "Mass Trespass" — een massale wandelprotestactie die uiteindelijk leidde tot het Britse recht op vrije toegang tot de natuur ("right to roam").
+        <div class="park-facts">
+          <div><span>Opgericht</span>1951 (eerste van GB)</div>
+          <div><span>Oppervlakte</span>1.437 km²</div>
+          <div><span>Hoogste punt</span>Kinder Scout, 636 m</div>
+          <div><span>Bijzonderheid</span>Mass Trespass 1932</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Kinder Scout Circular via Grindsbrook Clough</strong><br>
+        Een pittige route van 12,7 km vanaf Edale, omhoog via de rotsige kloof Grindsbrook Clough naar het Kinder-plateau — het hoogste punt van de Peak District. Onderweg passeer je karakteristieke gritstone-formaties als de Wool Packs en Noe Stool, met uitzicht op Kinder Downfall (de hoogste waterval van het park). Terug via Jacob's Ladder en de Pennine Way. Een kortere, rustige optie is de wandeling naar Mam Tor (6 km) hierboven beschreven.
+        <div class="park-facts">
+          <div><span>Afstand</span>12,7 km</div>
+          <div><span>Duur</span>±4,5 uur</div>
+          <div><span>Start</span>Edale dorp</div>
+          <div><span>Hoogtepunt</span>Kinder-plateau</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="15" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">15</div>
+      <div><div class="day-title">🔴 Peak District → Yorkshire Dales</div><div class="day-sub">Via Leeds/Skipton</div></div>
+      <div class="day-right"><div class="day-km">~140 km</div><div class="day-type">±2,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Noordwaarts naar de Yorkshire Dales — groene heuvels met droogstenen muurtjes, in juni bezaaid met lammeren en wilde bloemen.</p>
+      <div class="tags"><span class="tag tag-juni">Wilde bloemen in bloei</span><span class="tag tag-camper">Rustige B-wegen</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Wood Nook Caravan Park (Malham) — hondvriendelijk.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="16" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">16</div>
+      <div><div class="day-title">🟢 Rustdag Yorkshire Dales</div><div class="day-sub">Malham Cove-wandeling</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandeling naar Malham Cove, een enorme natuurlijke kalkstenen amfitheater, en optioneel door naar Malham Tarn.</p>
+      <div class="tags"><span class="tag tag-wandel">Malham Cove</span><span class="tag tag-hond">Los op de meeste paden</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Yorkshire Dales</strong><br>
+        Opgericht in 1954 en in 2016 flink uitgebreid richting het westen. Het landschap bestaat uit groene "dales" (valleien), duizenden kilometers karakteristieke droogstenen muurtjes en dramatisch kalksteenreliëf zoals Malham Cove — een amfitheatervormige klif van 80 meter hoog, ooit een waterval groter dan Niagara. De "Yorkshire Three Peaks" (Whernside, Ingleborough en Pen-y-ghent) vormen een populaire wandeluitdaging van 39 km.
+        <div class="park-facts">
+          <div><span>Opgericht</span>1954</div>
+          <div><span>Oppervlakte</span>2.179 km²</div>
+          <div><span>Hoogste punt</span>Whernside, 736 m</div>
+          <div><span>Bijzonderheid</span>Droogstenen muurtjes</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Malham Cove, Gordale Scar &amp; Malham Tarn Circular</strong><br>
+        Een "greatest hits"-route van 13 km die start en eindigt in Malham en langs vier iconische bezienswaardigheden voert: Janet's Foss (een idyllische waterval), de dramatische kloof Gordale Scar, het rustige Malham Tarn (een van de weinige natuurlijke meren van de Dales) en tot slot het imposante kalkstenen amfitheater van Malham Cove, bekend van "Harry Potter and the Deathly Hallows". Een korte klimscramble bij Gordale Scar is optioneel te omzeilen.
+        <div class="park-facts">
+          <div><span>Afstand</span>13 km</div>
+          <div><span>Duur</span>±4 uur</div>
+          <div><span>Start</span>Malham village</div>
+          <div><span>Hoogtepunt</span>Malham Cove, 80 m</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="17" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">17</div>
+      <div><div class="day-title">🔴 Yorkshire Dales → Lake District</div><div class="day-sub">Windermere</div></div>
+      <div class="day-right"><div class="day-km">~110 km</div><div class="day-type">±2 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Korte rijdag over de M6 naar het Lake District National Park. Basis bij Windermere.</p>
+      <div class="tags"><span class="tag tag-stad">Windermere</span><span class="tag tag-juni">Lange, lichte avonden aan het meer</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Limefitt Holiday Park (Troutbeck) — hondvriendelijk.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="18" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">18</div>
+      <div><div class="day-title">🟢 Rustdag Lake District</div><div class="day-sub">Ambleside · meerwandeling</div></div>
+      <div class="day-right"><div class="day-km">— km</div><div class="day-type">Rustdag</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Wandeling langs Windermere naar Ambleside, of een klim naar Loughrigg Fell. Bootje huren op het meer is ook een relaxte optie.</p>
+      <div class="tags"><span class="tag tag-wandel">Loughrigg Fell</span><span class="tag tag-hond">Hond mag mee op de boot</span></div>
+      <div class="box-park info-box">
+        <strong>🏞️ Nationaal park: Lake District</strong><br>
+        Opgericht in 1951 en sinds 2017 UNESCO Werelderfgoed. Het grootste nationale park van Engeland, met 16 grote meren (waaronder Windermere, het grootste natuurlijke meer van Engeland) en Scafell Pike (978 m), de hoogste berg van Engeland. Het glaciale landschap van scherpe bergtoppen en diepe dalen inspireerde dichter William Wordsworth en, later, schrijfster en illustrator Beatrix Potter, die met de opbrengst van haar boeken duizenden hectares land opkocht om ze te beschermen — nagelaten aan de National Trust.
+        <div class="park-facts">
+          <div><span>Opgericht</span>1951</div>
+          <div><span>Oppervlakte</span>2.362 km²</div>
+          <div><span>Hoogste punt</span>Scafell Pike, 978 m</div>
+          <div><span>Bijzonderheid</span>UNESCO sinds 2017</div>
+        </div>
+      </div>
+      <div class="box-hike info-box">
+        <strong>🥾 Wandeling: Loughrigg Fell Circular</strong><br>
+        Een klassieke Lake District-route van 12 km vanaf Ambleside naar de top van Loughrigg Fell (335 m) — bescheiden in hoogte, maar met een van de meest complete panorama's van het park: Windermere, Grasmere, Rydal Water en de Langdale Pikes tegelijk in beeld. De route voert via het airy Loughrigg Terrace en langs Rydal Cave, een voormalige leisteengroeve waar je zo naar binnen kunt lopen.
+        <div class="park-facts">
+          <div><span>Afstand</span>~12 km</div>
+          <div><span>Duur</span>±3,5 uur</div>
+          <div><span>Start</span>Ambleside centrum</div>
+          <div><span>Hoogtepunt</span>Loughrigg Fell, 335 m</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div class="phase-header"><span class="phase-label">Fase 4 — Terugreis</span><div class="phase-line"></div><span class="phase-days">Dag 19–21</span></div>
+
+  <div class="day-card" data-day="19" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">19</div>
+      <div><div class="day-title">🔴 Lake District → York</div><div class="day-sub">Historische stad</div></div>
+      <div class="day-right"><div class="day-km">~180 km</div><div class="day-type">±3 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Via de A66 dwars door de Pennines naar York. Parkeer de camper aan de rand en loop of neem de bus naar het centrum voor York Minster en de Shambles-straatjes.</p>
+      <div class="tags"><span class="tag tag-stad">York Minster</span><span class="tag tag-camper">Camper aan de rand parkeren</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Rowntree Park Caravan Club Site (York) — hondvriendelijk, rivierwandeling naar centrum.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="20" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">20</div>
+      <div><div class="day-title">🔴 York → Dover</div><div class="day-sub">Lange rijdag zuidwaarts</div></div>
+      <div class="day-right"><div class="day-km">~440 km</div><div class="day-type">±5,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Grotendeels snelweg via de A1(M) en M25 (spits vermijden) naar Dover. Overnachten dicht bij de ferryterminal zodat je 's ochtends fris kan inchecken voor de overtocht.</p>
+      <div class="tags"><span class="tag tag-camper">Lange rijdag</span><span class="tag tag-ferry">Overnachten bij Dover</span></div>
+      <div class="box-camper info-box"><strong>Camperplaats:</strong> Camping and Caravanning Club Site Canterbury (opnieuw) of White Cliffs Caravan Club Site (Dover) — dicht bij de terminal.</div>
+    </div>
+  </div>
+
+  <div class="day-card" data-day="21" onclick="toggle(this)">
+    <div class="day-header">
+      <div class="day-num">21</div>
+      <div><div class="day-title">🔴 Dover → Calais (P&amp;O Ferries) → Dordrecht</div><div class="day-sub">Laatste etappe — thuis!</div></div>
+      <div class="day-right"><div class="day-km">~230 km + overtocht</div><div class="day-type">±3,5 uur</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>Ochtend-overtocht met P&amp;O Ferries Dover–Calais (ca. 90 minuten). Vanaf Calais via de A16 door België terug naar Dordrecht. Welkom thuis — 21 dagen, van de kliffen van Pembrokeshire tot de meren van het Lake District.</p>
+      <div class="tags"><span class="tag tag-ferry">P&amp;O Ferries Dover–Calais</span></div>
+      <div class="box-tip info-box"><strong>🏡 Welkom thuis.</strong> Volgend jaar Schotland?</div>
+    </div>
+  </div>
+
+  <div class="totals">
+    <div class="total-item"><div class="total-val">21</div><div class="total-lbl">Dagen</div></div>
+    <div class="total-item"><div class="total-val">~2.600</div><div class="total-lbl">Km totaal</div></div>
+    <div class="total-item"><div class="total-val">12</div><div class="total-lbl">Rijdagen</div></div>
+    <div class="total-item"><div class="total-val">9</div><div class="total-lbl">Rust/verblijf</div></div>
+    <div class="total-item"><div class="total-val">10</div><div class="total-lbl">Bestemmingen</div></div>
+    <div class="total-item"><div class="total-val">2×</div><div class="total-lbl">P&amp;O overtocht</div></div>
+  </div>
+
+</div>
+
+</div>
+
+<div id="customTripsEnd"></div>
+
 <button class="fab" onclick="openPanel()">＋ Tip toevoegen</button>
-<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
+
 <div class="tip-panel" id="tipPanel">
   <div class="panel-hdr">
     <span class="panel-title">✨ Tip toevoegen via AI</span>
-    <button class="panel-close" onclick="closePanel()">✕</button>
+    <button class="panel-close" onclick="closeAllPanels()">✕</button>
   </div>
-  <p class="panel-sub">Beschrijf een wandeling, camperplaats, restaurant of opmerking. De AI vult het aan en koppelt het aan de juiste dag.</p>
- <textarea class="panel-input" id="tipInput" placeholder="bijv. 'Bij de Tre Cime altijd voor 9u starten' of 'Porto Selvaggio heeft een tweede ingang via Nardò'"></textarea>
-<input type="password" class="panel-input" id="tipPassword" placeholder="Wachtwoord" style="min-height:unset;margin-top:.6rem;" />
+  <p class="panel-sub">Beschrijf een wandeling, camperplaats, restaurant of opmerking voor de reis die nu open staat. De AI koppelt het aan de juiste dag.</p>
+  <textarea class="panel-input" id="tipInput" placeholder="bijv. 'Bij Malham Cove altijd voor 9u starten'"></textarea>
+  <input type="password" class="panel-input" id="tipPassword" placeholder="Wachtwoord" style="min-height:unset;margin-top:.6rem;" />
   <div class="panel-row">
     <div class="panel-status" id="tipStatus"></div>
     <button class="panel-btn" id="tipBtn" onclick="submitTip()">Toevoegen</button>
   </div>
 </div>
 
+<div class="tip-panel" id="newTripPanel">
+  <div class="panel-hdr">
+    <span class="panel-title">🧭 Nieuwe reis toevoegen</span>
+    <button class="panel-close" onclick="closeAllPanels()">✕</button>
+  </div>
+  <p class="panel-sub">Vertel waar de reis naartoe gaat en beantwoord een paar vragen — de AI genereert een volledige dagroute in dezelfde stijl.</p>
+
+  <div class="form-row">
+    <label>Naar waar?</label>
+    <input type="text" id="ntBestemming" placeholder="bijv. Zweden, Noorwegen, Kroatië...">
+  </div>
+  <div class="form-row">
+    <label>Wanneer (maand/jaar)?</label>
+    <input type="text" id="ntWanneer" placeholder="bijv. augustus 2028">
+  </div>
+  <div class="form-row">
+    <label>Gaat Brooklyn mee?</label>
+    <div class="radio-group">
+      <label><input type="radio" name="ntBrooklyn" value="ja" checked> Ja</label>
+      <label><input type="radio" name="ntBrooklyn" value="nee"> Nee</label>
+    </div>
+  </div>
+  <div class="form-row">
+    <label>Met de camper of het vliegtuig?</label>
+    <div class="radio-group">
+      <label><input type="radio" name="ntVervoer" value="camper" checked> Camper</label>
+      <label><input type="radio" name="ntVervoer" value="vliegtuig"> Vliegtuig</label>
+    </div>
+  </div>
+  <div class="form-row">
+    <label>Periode (aantal dagen of data)</label>
+    <input type="text" id="ntPeriode" placeholder="bijv. 14 dagen, of 3 t/m 17 augustus">
+  </div>
+  <div class="form-row">
+    <label>Wachtwoord</label>
+    <input type="password" id="ntPassword" placeholder="Wachtwoord">
+  </div>
+
+  <div class="panel-row">
+    <div class="panel-status" id="ntStatus"></div>
+    <button class="panel-btn" id="ntBtn" onclick="submitNewTrip()">Genereer reis</button>
+  </div>
+</div>
+
 <script>
-// ─── Kaart per dag ───────────────────────────────────────────
+// ─── Kaart per dag (alleen Italië) ─────────────────────────────
 const DAY_MAPS = {
   'dag-01':    [47.27,  11.39,  6],
   'dag-02':    [46.694, 12.085, 11],
@@ -537,16 +1171,14 @@ const DAY_MAPS = {
   'dag-30':    [46.5,    8.5,    7],
   'dag-31':    [50.0,    6.5,    6],
 };
-
 function mapUrl(lat, lon, zoom) {
   const d = {5:5,6:3,7:1.5,8:0.75,9:0.35,10:0.18,11:0.09}[zoom] || 0.2;
   return `https://www.openstreetmap.org/export/embed.html?bbox=${lon-d},${lat-d},${lon+d},${lat+d}&layer=mapnik&marker=${lat},${lon}`;
 }
-
 function injectMap(card) {
-  const id = card.dataset.dayId;
-  if (!DAY_MAPS[id] || card.querySelector('.day-map-wrap')) return;
-  const [lat, lon, zoom] = DAY_MAPS[id];
+  const localId = card.dataset.localId;
+  if (!DAY_MAPS[localId] || card.querySelector('.day-map-wrap')) return;
+  const [lat, lon, zoom] = DAY_MAPS[localId];
   const wrap = document.createElement('div');
   wrap.className = 'day-map-wrap';
   const iframe = document.createElement('iframe');
@@ -557,9 +1189,17 @@ function injectMap(card) {
   card.querySelector('.day-body').prepend(wrap);
 }
 
-// ─── Card toggle ─────────────────────────────────────────────
+// ─── Tabs ────────────────────────────────────────────────────
+let currentTrip = 'italy';
+function switchTab(tripId) {
+  currentTrip = tripId;
+  document.querySelectorAll('.trip-view').forEach(v => v.classList.toggle('active', v.dataset.trip === tripId));
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tripId));
+}
+
+// ─── Card toggle (werkt voor alle trips) ───────────────────────
 function toggle(card, e) {
-  if (e && e.target.closest('.notes-section, .ai-tips-container, .ai-tips-label, .ai-tip-del, .panel-close, .fab')) return;
+  if (e && e.target.closest('.notes-section, .ai-tips-container, .ai-tips-label, .ai-tip-del, .panel-close, .fab, .box-community')) return;
   const body = card.querySelector('.day-body');
   const open = !body.classList.contains('open');
   body.classList.toggle('open', open);
@@ -567,16 +1207,17 @@ function toggle(card, e) {
   if (open) injectMap(card);
 }
 
-let allOpen = false;
-function toggleAll() {
-  allOpen = !allOpen;
-  document.querySelectorAll('.day-body').forEach(b => b.classList.toggle('open', allOpen));
-  document.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', allOpen));
-  document.querySelector('.ctrl-btn').textContent = allOpen ? 'Alles inklappen' : 'Alles uitklappen';
+function toggleAll(btn) {
+  const view = btn.closest('.trip-view');
+  const nowOpen = !view.dataset.allOpen || view.dataset.allOpen === 'false';
+  view.dataset.allOpen = nowOpen ? 'true' : 'false';
+  view.querySelectorAll('.day-body').forEach(b => b.classList.toggle('open', nowOpen));
+  view.querySelectorAll('.day-card').forEach(c => c.classList.toggle('open', nowOpen));
+  btn.textContent = nowOpen ? 'Alles inklappen' : 'Alles uitklappen';
 }
 
-// ─── Notes (localStorage) ────────────────────────────────────
-const NOTES_KEY = 'camperroute_notes';
+// ─── Notes (localStorage), per trip+dag ────────────────────────
+const NOTES_KEY = 'camperroute_notes_v2';
 function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); } catch { return {}; } }
 function saveNote(k, v) { const n = loadNotes(); n[k] = v; localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
 function saveNoteFor(btn, dayId) {
@@ -587,89 +1228,85 @@ function saveNoteFor(btn, dayId) {
   setTimeout(() => msg.classList.remove('show'), 2000);
 }
 
-// ─── Panel ───────────────────────────────────────────────────
+// ─── Panels ──────────────────────────────────────────────────
 function openPanel() {
   document.getElementById('overlay').classList.add('open');
   document.getElementById('tipPanel').classList.add('open');
   setTimeout(() => document.getElementById('tipInput').focus(), 320);
 }
-function closePanel() {
+function openNewTripPanel() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('newTripPanel').classList.add('open');
+}
+function closeAllPanels() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('tipPanel').classList.remove('open');
+  document.getElementById('newTripPanel').classList.remove('open');
 }
 
 // ─── AI Tips ─────────────────────────────────────────────────
 function renderTip(tip) {
-  const date = new Date(tip.ts).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
-  const preview = tip.userInput.length > 45 ? tip.userInput.slice(0, 45) + '…' : tip.userInput;
+  const date = tip.ts ? new Date(tip.ts).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
   return `<div class="ai-tip-box" id="${tip.id}">
-    <button class="ai-tip-del" onclick="deleteTip('${tip.id}')" title="Verwijderen">×</button>
-    <div class="ai-tip-title">${tip.tipTitle}</div>
-    <div class="ai-tip-content">${tip.tipContent}</div>
-    <span class="ai-tip-meta">Toegevoegd ${date} · "${preview}"</span>
+    <button class="ai-tip-del" onclick="deleteTip('${tip.tripId}','${tip.id}')" title="Verwijderen">×</button>
+    <div class="ai-tip-title">${tip.tipTitle || '💡 Tip'}</div>
+    <div class="ai-tip-content">${tip.tipContent || tip.text || ''}</div>
+    <span class="ai-tip-meta">${date}</span>
   </div>`;
 }
-
 function injectTip(tip) {
-  const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
+  const view = document.querySelector(`.trip-view[data-trip="${tip.tripId}"]`);
+  if (!view) return;
+  const card = view.querySelector(`[data-local-id="${tip.dayId}"]`);
   if (!card) return;
   const container = card.querySelector('.ai-tips-container');
   const label = card.querySelector('.ai-tips-label');
   if (container) container.insertAdjacentHTML('beforeend', renderTip(tip));
   if (label) label.style.display = 'block';
 }
-
-async function loadTips() {
+async function loadTipsForTrip(tripId) {
   try {
-    const tips = await fetch('/api/tips').then(r => { if (!r.ok) throw new Error(); return r.json(); });
-    tips.forEach(injectTip);
-  } catch {
-    document.getElementById('previewBanner').classList.add('show');
-  }
+    const tips = await fetch('/api/tips?trip=' + encodeURIComponent(tripId)).then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    (tips || []).forEach(t => injectTip({ ...t, tripId }));
+  } catch (e) { /* stil falen, werkt pas na deploy met env vars */ }
 }
-
-async function deleteTip(id) {
+async function deleteTip(tripId, id) {
   if (!confirm('Tip verwijderen?')) return;
   const el = document.getElementById(id);
   try {
-    const r = await fetch(`/api/tips?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (!r.ok) throw new Error(`Server: ${r.status}`);
+    const r = await fetch(`/api/tips?trip=${encodeURIComponent(tripId)}&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!r.ok) throw new Error('Server: ' + r.status);
     el?.remove();
-  } catch (e) {
-    alert('Kon tip niet verwijderen: ' + e.message);
-  }
+  } catch (e) { alert('Kon tip niet verwijderen: ' + e.message); }
 }
-
 async function submitTip() {
   const elInput = document.getElementById('tipInput');
   const elPw    = document.getElementById('tipPassword');
   const btn     = document.getElementById('tipBtn');
   const status  = document.getElementById('tipStatus');
-
-  const inputVal = elInput ? elInput.value.trim() : '';
-  const pwVal    = elPw    ? elPw.value           : '';
-
-  if (!inputVal) { status.textContent = '⚠️ Voer een tip in';        return; }
+  const inputVal = elInput.value.trim();
+  const pwVal    = elPw.value;
+  if (!inputVal) { status.textContent = '⚠️ Voer een tip in'; return; }
   if (!pwVal)    { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
-
   btn.disabled = true;
   status.textContent = '⏳ AI verwerkt je tip…';
   try {
     const r = await fetch('/api/tips', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: inputVal, password: pwVal }),
+      body: JSON.stringify({ tripId: currentTrip, input: inputVal, password: pwVal }),
     });
     if (!r.ok) throw new Error((await r.json()).error || r.status);
     const tip = await r.json();
-    injectTip(tip);
-    const card = document.querySelector(`[data-day-id="${tip.dayId}"]`);
+    injectTip({ ...tip, tripId: currentTrip });
+    const view = document.querySelector(`.trip-view[data-trip="${currentTrip}"]`);
+    const card = view.querySelector(`[data-local-id="${tip.dayId}"]`);
     if (card && !card.classList.contains('open')) toggle(card, null);
     card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     status.textContent = `✓ Toegevoegd aan "${tip.dayTitle}"`;
     elInput.value = '';
-    elPw.value    = '';
-    setTimeout(closePanel, 1800);
+    elPw.value = '';
+    setTimeout(closeAllPanels, 1800);
   } catch (e) {
     status.textContent = '⚠️ Fout: ' + e.message;
   } finally {
@@ -677,38 +1314,154 @@ async function submitTip() {
   }
 }
 
-// ─── Init ────────────────────────────────────────────────────
-document.querySelectorAll('.day-body').forEach(body => {
-  const dayId = body.closest('[data-day-id]')?.dataset.dayId || 'onbekend';
+// ─── Nieuwe reis genereren ──────────────────────────────────────
+function slugify(s) {
+  return 'trip-' + s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '-' + Date.now().toString(36);
+}
 
-  const label = document.createElement('div');
-  label.className = 'ai-tips-label';
-  label.textContent = '🌿 Tips van de community';
-  const container = document.createElement('div');
-  container.className = 'ai-tips-container';
-  body.appendChild(label);
-  body.appendChild(container);
+async function submitNewTrip() {
+  const bestemming = document.getElementById('ntBestemming').value.trim();
+  const wanneer    = document.getElementById('ntWanneer').value.trim();
+  const brooklyn   = document.querySelector('input[name="ntBrooklyn"]:checked').value;
+  const vervoer    = document.querySelector('input[name="ntVervoer"]:checked').value;
+  const periode    = document.getElementById('ntPeriode').value.trim();
+  const password   = document.getElementById('ntPassword').value;
+  const status = document.getElementById('ntStatus');
+  const btn = document.getElementById('ntBtn');
 
-  const saved = loadNotes()[dayId] || '';
+  if (!bestemming || !wanneer || !periode) { status.textContent = '⚠️ Vul bestemming, wanneer en periode in'; return; }
+  if (!password) { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
+
+  btn.disabled = true;
+  status.textContent = '⏳ AI genereert de route… dit kan een minuut duren';
+  try {
+    const r = await fetch('/api/generate-trip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bestemming, wanneer, brooklyn, vervoer, periode, password }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    const trip = await r.json();
+    addTripTab(trip);
+    switchTab(trip.id);
+    status.textContent = '✓ Reis toegevoegd!';
+    setTimeout(closeAllPanels, 1200);
+  } catch (e) {
+    status.textContent = '⚠️ Fout: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function buildDayCardHtml(tripId, day) {
+  const localId = day.id;
+  const tags = (day.tags || []).map(t => `<span class="tag ${t.cls || 'tag-camper'}">${esc(t.label)}</span>`).join('');
+  const boxes = (day.boxes || []).map(b => `<div class="${b.cls || 'box-tip'} info-box"><strong>${esc(b.label)}</strong> ${esc(b.text)}</div>`).join('');
+  const icon = day.type === 'rest' ? '🟢' : '🔴';
+  return `<div class="day-card" data-local-id="${esc(localId)}" onclick="toggle(this, event)">
+    <div class="day-header">
+      <div class="day-num">${esc(day.num)}</div>
+      <div><div class="day-title">${icon} ${esc(day.title)}</div><div class="day-sub">${esc(day.sub || '')}</div></div>
+      <div class="day-right"><div class="day-km">${esc(day.km || '— km')}</div><div class="day-type">${esc(day.duration || '')}</div><div class="chevron">▼</div></div>
+    </div>
+    <div class="day-body">
+      <p>${esc(day.body)}</p>
+      <div class="tags">${tags}</div>
+      ${boxes}
+    </div>
+  </div>`;
+}
+
+function renderTripSection(trip) {
+  const phasesHtml = (trip.phases || []).map(phase => {
+    const daysHtml = (phase.days || []).map(d => buildDayCardHtml(trip.id, d)).join('\n');
+    return `<div class="phase-header"><span class="phase-label">${esc(phase.label)}</span><div class="phase-line"></div><span class="phase-days">${esc(phase.dayRange || '')}</span></div>\n${daysHtml}`;
+  }).join('\n');
+
+  const totalsHtml = (trip.totals || []).map(t => `<div class="total-item"><div class="total-val">${esc(t.val)}</div><div class="total-lbl">${esc(t.lbl)}</div></div>`).join('');
+  const specsHtml = (trip.specs || []).map(s => `<span>${esc(s)}</span>`).join('');
+
   const section = document.createElement('div');
-  section.className = 'notes-section';
+  section.className = 'trip-view';
+  section.dataset.trip = trip.id;
+  section.dataset.theme = trip.theme || 'italy';
   section.innerHTML = `
-    <div class="notes-label">✏️ Mijn notities</div>
-    <textarea class="notes-textarea" placeholder="Persoonlijke notities, boekingen, herinneringen…">${saved}</textarea>
-    <div class="notes-save-row">
-      <span class="notes-saved-msg">✓ Opgeslagen</span>
-      <button class="notes-save-btn" onclick="saveNoteFor(this,'${dayId}')">Opslaan</button>
+    <header>
+      <div class="header-label">${esc(trip.headerLabel)}</div>
+      <h1>Dordrecht <em>naar</em><br>${esc(trip.destination)}</h1>
+      <div class="header-divider"></div>
+      <p class="header-meta">${esc(trip.meta)}</p>
+    </header>
+    <div class="oktober-bar">${esc(trip.barText || '')}</div>
+    <div class="specs-bar">${specsHtml}</div>
+    <div class="container">
+      <div class="controls"><button class="ctrl-btn" onclick="toggleAll(this)">Alles uitklappen</button></div>
+      <div class="legend">
+        <div class="legend-item"><div class="dot dot-drive"></div> Rijdag</div>
+        <div class="legend-item"><div class="dot dot-rest"></div> Rustdag / verblijf</div>
+      </div>
+      ${phasesHtml}
+      <div class="totals">${totalsHtml}</div>
     </div>`;
-  body.appendChild(section);
-});
+  document.body.insertBefore(section, document.getElementById('customTripsEnd'));
+  initTripView(section);
+}
+
+function addTripTab(trip) {
+  renderTripSection(trip);
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn';
+  btn.dataset.tab = trip.id;
+  btn.textContent = trip.tabLabel || ('🧭 ' + trip.destination);
+  btn.onclick = () => switchTab(trip.id);
+  document.getElementById('customTabs').appendChild(btn);
+}
+
+// ─── Init per trip-view: normaliseer day-ids, voeg tips/notes-secties toe ─
+function initTripView(view) {
+  const tripId = view.dataset.trip;
+  view.querySelectorAll('.day-card').forEach(card => {
+    let localId = card.dataset.localId || card.dataset.dayId || card.dataset.day;
+    if (!localId) return;
+    card.dataset.localId = localId;
+  });
+  view.querySelectorAll('.day-body').forEach(body => {
+    if (body.querySelector('.notes-section')) return; // al geïnitialiseerd
+    const card = body.closest('.day-card');
+    const localId = card ? card.dataset.localId : 'onbekend';
+    const noteKey = tripId + ':' + localId;
+
+    const label = document.createElement('div');
+    label.className = 'ai-tips-label';
+    label.textContent = '🌿 Tips van de community';
+    const container = document.createElement('div');
+    container.className = 'ai-tips-container';
+    body.appendChild(label);
+    body.appendChild(container);
+
+    const saved = loadNotes()[noteKey] || '';
+    const section = document.createElement('div');
+    section.className = 'notes-section';
+    section.innerHTML = `
+      <div class="notes-label">✏️ Mijn notities</div>
+      <textarea class="notes-textarea" placeholder="Persoonlijke notities, boekingen, herinneringen…">${saved}</textarea>
+      <div class="notes-save-row">
+        <span class="notes-saved-msg">✓ Opgeslagen</span>
+        <button class="notes-save-btn" onclick="saveNoteFor(this,'${noteKey}')">Opslaan</button>
+      </div>`;
+    body.appendChild(section);
+  });
+  loadTipsForTrip(tripId);
+}
 
 document.addEventListener('click', e => {
   if (e.target.closest('.notes-section') || e.target.closest('.ai-tips-container') || e.target.closest('.ai-tips-label'))
     e.stopPropagation();
 });
-
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closePanel();
+  if (e.key === 'Escape') closeAllPanels();
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     if (e.target.classList.contains('notes-textarea'))
       e.target.closest('.notes-section').querySelector('.notes-save-btn').click();
@@ -716,7 +1469,17 @@ document.addEventListener('keydown', e => {
   }
 });
 
-loadTips();
+// ─── Boot ────────────────────────────────────────────────────
+document.querySelectorAll('.trip-view').forEach(initTripView);
+
+async function loadCustomTrips() {
+  try {
+    const trips = await fetch('/api/generate-trip').then(r => r.ok ? r.json() : []);
+    (trips || []).forEach(addTripTab);
+  } catch (e) { /* nog geen opgeslagen eigen reizen, of nog niet gedeployed */ }
+}
+loadCustomTrips();
 </script>
+
 </body>
 </html>
