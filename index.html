@@ -19,7 +19,7 @@
   .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
   .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
   .header-map{display:block;position:absolute;left:1.75rem;top:50%;transform:translateY(-50%);width:92px;height:92px;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.28);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:2;background:rgba(255,255,255,.08);}
-  .header-map img{width:100%;height:100%;object-fit:cover;display:block;}
+  .header-map img,.header-map svg{width:100%;height:100%;object-fit:cover;display:block;}
   .header-map:hover{border-color:rgba(255,255,255,.55);}
   @media (max-width:680px){.header-map{position:static;transform:none;margin:0 auto 1.1rem;}}
   .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
@@ -245,9 +245,6 @@
 
 <div class="trip-view active" data-trip="italy" data-theme="italy">
 <header>
-  <a class="header-map" href="https://www.openstreetmap.org/#map=6/45.92/11.58" target="_blank" rel="noopener" title="Bekijk routekaart">
-    <img src="https://staticmap.openstreetmap.de/staticmap.php?center=45.92,11.58&zoom=5&size=180x180&maptype=mapnik&markers=51.81,4.67,lightblue1|40.039,15.291,lightblue1&path=color:0xb85c2aff|weight:3|51.81,4.67|47.27,11.39|46.694,12.085|46.619,12.303|46.549,11.874|45.5,11.0|43.05,11.62|42.888,11.624|42.641,11.086|41.0,14.0|40.039,15.291|40.751,14.489|40.821,14.429|40.65,14.75|40.627,14.484|41.2,15.8|41.882,16.173|40.814,16.418|40.144,18.491|40.731,17.423|41.2,15.0|43.5,12.0|46.5,8.5|51.81,4.67" alt="Routekaart Dordrecht–Puglia" loading="lazy">
-  </a>
   <div class="header-label">Camperreis · Oktober 2025 · Natuur-editie</div>
   <h1>Dordrecht <em>naar</em><br>Puglia</h1>
   <div class="header-divider"></div>
@@ -619,9 +616,6 @@
 
 <div class="trip-view" data-trip="england" data-theme="england">
 <header>
-  <a class="header-map" href="https://www.openstreetmap.org/#map=6/52.47/-0.3" target="_blank" rel="noopener" title="Bekijk routekaart">
-    <img src="https://staticmap.openstreetmap.de/staticmap.php?center=52.47,-0.3&zoom=6&size=180x180&maptype=mapnik&markers=51.81,4.67,lightblue1|54.3701,-2.907,lightblue1&path=color:0x2a6b5cff|weight:3|51.81,4.67|51.2802,1.0789|51.8767,-1.753|50.86,-1.58|50.7286,-2.937|50.5719,-3.916|51.8813,-5.268|53.36,-1.813|54.0614,-2.159|54.3701,-2.907|53.959,-1.0815|51.1279,1.3134|51.81,4.67" alt="Routekaart Dordrecht–Engeland" loading="lazy">
-  </a>
   <div class="header-label">Camperreis · Juni 2027</div>
   <h1>Dordrecht <em>naar</em><br>Engeland</h1>
   <div class="header-divider"></div>
@@ -1367,26 +1361,63 @@ async function submitNewTrip() {
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-const THEME_MAP_COLORS = { italy: 'b85c2a', england: '2a6b5c', ocean: '2a6b6b' };
+const THEME_MAP_COLORS = { italy: '#d4784a', england: '#5a80a8', ocean: '#6aae7a' };
 
+// Tekent een routekaartje volledig lokaal als inline SVG (geen externe kaart-service nodig,
+// dus altijd zichtbaar, ook als een externe static-map-provider onbereikbaar/geblokkeerd is).
 function buildRouteMapHtml(points, theme) {
   if (!points || points.length < 2) return '';
   const lats = points.map(p => p[0]), lons = points.map(p => p[1]);
   const minLat = Math.min(...lats), maxLat = Math.max(...lats);
   const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-  const centerLat = (minLat + maxLat) / 2;
-  const centerLon = (minLon + maxLon) / 2;
-  const latSpan = Math.max(maxLat - minLat, 0.05);
-  const lonSpan = Math.max(maxLon - minLon, 0.05);
-  const maxSpan = Math.max(latSpan, lonSpan);
-  let zoom = Math.floor(Math.log2(360 / maxSpan)) - 2;
-  zoom = Math.min(11, Math.max(3, zoom));
-  const color = THEME_MAP_COLORS[theme] || 'b85c2a';
-  const pathStr = points.map(p => p[0] + ',' + p[1]).join('|');
-  const first = points[0], last = points[points.length - 1];
-  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLon}&zoom=${zoom}&size=180x180&maptype=mapnik&markers=${first[0]},${first[1]},lightblue1|${last[0]},${last[1]},lightblue1&path=color:0x${color}ff|weight:3|${pathStr}`;
-  const osmLink = `https://www.openstreetmap.org/#map=${zoom}/${centerLat}/${centerLon}`;
-  return `<a class="header-map" href="${osmLink}" target="_blank" rel="noopener" title="Bekijk routekaart"><img src="${mapUrl}" alt="Routekaart" loading="lazy"></a>`;
+  const latSpan = Math.max(maxLat - minLat, 0.02);
+  const lonSpan = Math.max(maxLon - minLon, 0.02);
+  const latMid = (minLat + maxLat) / 2;
+  const lonScale = Math.max(Math.cos(latMid * Math.PI / 180), 0.15);
+  const projLonSpan = lonSpan * lonScale;
+  const pad = 14, box = 100 - pad * 2;
+  const scale = box / Math.max(latSpan, projLonSpan);
+  const offX = (box - projLonSpan * scale) / 2;
+  const offY = (box - latSpan * scale) / 2;
+  const proj = ([lat, lon]) => {
+    const x = pad + offX + (lon - minLon) * lonScale * scale;
+    const y = pad + offY + (maxLat - lat) * scale;
+    return [x.toFixed(1), y.toFixed(1)];
+  };
+  const pts = points.map(proj);
+  const pointsAttr = pts.map(p => p.join(',')).join(' ');
+  const color = THEME_MAP_COLORS[theme] || THEME_MAP_COLORS.italy;
+  const [sx, sy] = pts[0];
+  const [ex, ey] = pts[pts.length - 1];
+  const centerLat = (minLat + maxLat) / 2, centerLon = (minLon + maxLon) / 2;
+  const osmLink = `https://www.openstreetmap.org/#map=6/${centerLat.toFixed(3)}/${centerLon.toFixed(3)}`;
+  const svg = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Routekaart">
+    <rect x="0" y="0" width="100" height="100" fill="rgba(255,255,255,.06)"/>
+    <polyline points="${pointsAttr}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${sx}" cy="${sy}" r="3.4" fill="#fff" stroke="${color}" stroke-width="1.6"/>
+    <circle cx="${ex}" cy="${ey}" r="3.4" fill="${color}" stroke="#fff" stroke-width="1.6"/>
+  </svg>`;
+  return `<a class="header-map" href="${osmLink}" target="_blank" rel="noopener" title="Bekijk routekaart">${svg}</a>`;
+}
+
+const ITALY_ROUTE_POINTS = [
+  [51.81, 4.67], [47.27, 11.39], [46.694, 12.085], [46.619, 12.303], [46.549, 11.874],
+  [45.5, 11.0], [43.05, 11.62], [42.888, 11.624], [42.641, 11.086], [41.0, 14.0],
+  [40.039, 15.291], [40.751, 14.489], [40.821, 14.429], [40.65, 14.75], [40.627, 14.484],
+  [41.2, 15.8], [41.882, 16.173], [40.814, 16.418], [40.144, 18.491], [40.731, 17.423],
+  [41.2, 15.0], [43.5, 12.0], [46.5, 8.5], [51.81, 4.67],
+];
+const ENGLAND_ROUTE_POINTS = [
+  [51.81, 4.67], [51.2802, 1.0789], [51.8767, -1.753], [50.86, -1.58], [50.7286, -2.937],
+  [50.5719, -3.916], [51.8813, -5.268], [53.36, -1.813], [54.0614, -2.159], [54.3701, -2.907],
+  [53.959, -1.0815], [51.1279, 1.3134], [51.81, 4.67],
+];
+function injectStaticRouteMap(tripId, points) {
+  const view = document.querySelector(`.trip-view[data-trip="${tripId}"]`);
+  const header = view && view.querySelector('header');
+  if (!header || header.querySelector('.header-map')) return;
+  const html = buildRouteMapHtml(points, view.dataset.theme);
+  if (html) header.insertAdjacentHTML('afterbegin', html);
 }
 
 function buildDayCardHtml(tripId, day) {
@@ -1512,6 +1543,8 @@ document.addEventListener('keydown', e => {
 
 // ─── Boot ────────────────────────────────────────────────────
 document.querySelectorAll('.trip-view').forEach(initTripView);
+injectStaticRouteMap('italy', ITALY_ROUTE_POINTS);
+injectStaticRouteMap('england', ENGLAND_ROUTE_POINTS);
 
 async function loadCustomTrips() {
   try {
