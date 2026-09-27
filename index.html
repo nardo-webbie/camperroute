@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Camperroutes · Dordrecht op reis</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 
   :root{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
@@ -18,8 +20,11 @@
   header h1 em{font-style:italic;color:var(--olive-light);}
   .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
   .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
-  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;cursor:pointer;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
-  .header-map img,.header-map svg{width:100%;height:100%;object-fit:cover;display:block;}
+  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
+  .header-map .leaflet-container{width:100%;height:100%;background:#1a1410;font-family:'Outfit',sans-serif;}
+  .header-map .leaflet-control-attribution{font-size:.6rem;background:rgba(26,20,16,.55);color:#e8e0d0;padding:1px 5px;border-radius:2px 0 0 0;}
+  .header-map .leaflet-control-attribution a{color:#e8b84a;}
+  .header-map .leaflet-control-zoom,.header-map .leaflet-control-container .leaflet-top{display:none;}
   @media (max-width:680px){.header-map{position:static;width:100%;height:130px;margin:0 0 1.1rem;-webkit-mask-image:none;mask-image:none;}}
   .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
   .specs-bar{background:var(--rust);color:var(--parchment);display:flex;justify-content:center;gap:0 2.5rem;padding:.9rem 2rem;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;flex-wrap:wrap;row-gap:.4rem;}
@@ -1360,24 +1365,42 @@ async function submitNewTrip() {
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Kaartplaatje van het land met een pin per bezochte plek (MapTiler Static Maps API),
-// geen lijnen tussen de punten. Het plaatje linkt door naar een grotere versie op maptiler.com.
+// Kaartje in de kop: MapTiler-rastertegels (zelfde methode als de Scope customer portal,
+// via Leaflet — de Static Maps API zit niet in dit MapTiler-plan) met een marker per
+// bezochte plek, geen lijnen ertussen. Attributielink naar MapTiler zit in de kaart zelf.
 const MAPTILER_KEY = 'C724HA9DRkbDNZM31t5Y';
-const COUNTRY_MARKER_COLOR = { italy: 'b85c2a', england: '5a80a8', ocean: '6aae7a' };
-function buildRouteMarkersImageHtml(points, theme) {
-  if (!points || points.length < 1) return '';
+const COUNTRY_MARKER_COLOR = { italy: '#b85c2a', england: '#5a80a8', ocean: '#6aae7a' };
+let headerMapCounter = 0;
+
+function initHeaderMap(containerId, points, theme) {
+  const el = document.getElementById(containerId);
+  if (!el || !points || points.length < 1 || typeof L === 'undefined') return;
+  const map = L.map(el, {
+    scrollWheelZoom: false, dragging: false, zoomControl: false,
+    doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false,
+    attributionControl: true,
+  });
+  L.tileLayer(`https://api.maptiler.com/maps/base-v4/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`, {
+    tileSize: 512, zoomOffset: -1, minZoom: 1, maxZoom: 18, crossOrigin: true,
+    attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OSM</a>',
+  }).addTo(map);
+  map.attributionControl.setPosition('bottomleft');
   const color = COUNTRY_MARKER_COLOR[theme] || COUNTRY_MARKER_COLOR.italy;
-  const markers = points.map(([lat, lon]) => `${lon},${lat},%23${color}`).join('|');
-  const thumbUrl = `https://api.maptiler.com/maps/streets-v2/static/auto/320x320.png?key=${MAPTILER_KEY}&markers=${markers}`;
-  const bigUrl = `https://api.maptiler.com/maps/streets-v2/static/auto/1200x1200.png?key=${MAPTILER_KEY}&markers=${markers}`;
-  return `<a class="header-map" href="${bigUrl}" target="_blank" rel="noopener" title="Bekijk kaart met alle locaties op maptiler.com"><img src="${thumbUrl}" alt="Kaart met locaties" loading="lazy"></a>`;
+  const bounds = L.latLngBounds([]);
+  points.forEach(([lat, lon]) => {
+    L.circleMarker([lat, lon], { radius: 5, color: '#fff', weight: 1.5, fillColor: color, fillOpacity: 1 }).addTo(map);
+    bounds.extend([lat, lon]);
+  });
+  if (bounds.isValid()) map.fitBounds(bounds, { padding: [12, 12], maxZoom: 8 });
 }
-function injectRouteMarkersImage(tripId, points) {
+
+function injectHeaderMap(tripId, points, theme) {
   const view = document.querySelector(`.trip-view[data-trip="${tripId}"]`);
   const header = view && view.querySelector('header');
-  if (!header || header.querySelector('.header-map')) return;
-  const html = buildRouteMarkersImageHtml(points, view.dataset.theme);
-  if (html) header.insertAdjacentHTML('afterbegin', html);
+  if (!header || header.querySelector('.header-map') || !points || points.length < 1) return;
+  const id = 'headerMap' + (headerMapCounter++);
+  header.insertAdjacentHTML('afterbegin', `<div class="header-map" id="${id}"></div>`);
+  setTimeout(() => initHeaderMap(id, points, theme || view.dataset.theme), 0);
 }
 
 const ITALY_STOP_POINTS = [
@@ -1424,7 +1447,8 @@ function renderTripSection(trip) {
   (trip.phases || []).forEach(phase => (phase.days || []).forEach(d => {
     if (typeof d.lat === 'number' && typeof d.lon === 'number') stopPoints.push([d.lat, d.lon]);
   }));
-  const mapHtml = buildRouteMarkersImageHtml(stopPoints, trip.theme);
+  const mapId = 'headerMap' + (headerMapCounter++);
+  const mapHtml = stopPoints.length ? `<div class="header-map" id="${mapId}"></div>` : '';
 
   const section = document.createElement('div');
   section.className = 'trip-view';
@@ -1451,6 +1475,7 @@ function renderTripSection(trip) {
     </div>`;
   document.body.insertBefore(section, document.getElementById('customTripsEnd'));
   initTripView(section);
+  if (stopPoints.length) setTimeout(() => initHeaderMap(mapId, stopPoints, trip.theme), 0);
 }
 
 function addTripTab(trip) {
@@ -1515,8 +1540,8 @@ document.addEventListener('keydown', e => {
 
 // ─── Boot ────────────────────────────────────────────────────
 document.querySelectorAll('.trip-view').forEach(initTripView);
-injectRouteMarkersImage('italy', ITALY_STOP_POINTS);
-injectRouteMarkersImage('england', ENGLAND_STOP_POINTS);
+injectHeaderMap('italy', ITALY_STOP_POINTS, 'italy');
+injectHeaderMap('england', ENGLAND_STOP_POINTS, 'england');
 
 async function loadCustomTrips() {
   try {
