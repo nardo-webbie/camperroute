@@ -1427,40 +1427,23 @@ function openRouteMapModal(registryId) {
   }, 50);
 }
 
-// Tekent een routekaartje volledig lokaal als inline SVG (geen externe kaart-service nodig,
-// dus altijd zichtbaar, ook als een externe static-map-provider onbereikbaar/geblokkeerd is).
+// Toont een satellietbeeld van het reisgebied (MapTiler) als kop-thumbnail; klikken
+// opent de interactieve, ingezoomde kaart met de volledige route erop getekend.
 function buildRouteMapHtml(points, theme) {
   if (!points || points.length < 2) return '';
   const lats = points.map(p => p[0]), lons = points.map(p => p[1]);
   const minLat = Math.min(...lats), maxLat = Math.max(...lats);
   const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-  const latSpan = Math.max(maxLat - minLat, 0.02);
-  const lonSpan = Math.max(maxLon - minLon, 0.02);
-  const latMid = (minLat + maxLat) / 2;
-  const lonScale = Math.max(Math.cos(latMid * Math.PI / 180), 0.15);
-  const projLonSpan = lonSpan * lonScale;
-  const pad = 14, box = 100 - pad * 2;
-  const scale = box / Math.max(latSpan, projLonSpan);
-  const offX = (box - projLonSpan * scale) / 2;
-  const offY = (box - latSpan * scale) / 2;
-  const proj = ([lat, lon]) => {
-    const x = pad + offX + (lon - minLon) * lonScale * scale;
-    const y = pad + offY + (maxLat - lat) * scale;
-    return [x.toFixed(1), y.toFixed(1)];
-  };
-  const pts = points.map(proj);
-  const pointsAttr = pts.map(p => p.join(',')).join(' ');
-  const color = THEME_MAP_COLORS[theme] || THEME_MAP_COLORS.italy;
-  const [sx, sy] = pts[0];
-  const [ex, ey] = pts[pts.length - 1];
-  const svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Routekaart">
-    <polyline points="${pointsAttr}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
-    <circle cx="${sx}" cy="${sy}" r="2.8" fill="#fff" stroke="${color}" stroke-width="1.4"/>
-    <circle cx="${ex}" cy="${ey}" r="2.8" fill="${color}" stroke="#fff" stroke-width="1.4"/>
-  </svg>`;
+  const latPad = Math.max((maxLat - minLat) * 0.15, 0.3);
+  const lonPad = Math.max((maxLon - minLon) * 0.15, 0.3);
+  const bbox = [
+    (minLon - lonPad).toFixed(3), (minLat - latPad).toFixed(3),
+    (maxLon + lonPad).toFixed(3), (maxLat + latPad).toFixed(3),
+  ].join(',');
+  const imgUrl = `https://api.maptiler.com/maps/satellite/static/${bbox}/260x260.png?key=${MAPTILER_KEY}`;
   const registryId = 'rm' + (routeMapRegistryCounter++);
   ROUTE_MAP_REGISTRY[registryId] = { points, theme };
-  return `<div class="header-map" onclick="openRouteMapModal('${registryId}')" title="Bekijk routekaart">${svg}</div>`;
+  return `<div class="header-map" onclick="openRouteMapModal('${registryId}')" title="Bekijk ingezoomde kaart met route"><img src="${imgUrl}" alt="Kaart van het reisgebied" loading="lazy"></div>`;
 }
 
 const ITALY_ROUTE_POINTS = [
