@@ -49,6 +49,7 @@ Antwoord UITSLUITEND met geldige JSON, geen markdown, geen uitleg, in exact deze
   "barText": "<één regel sfeertekst met een relevante emoji vooraan>",
   "specs": ["<emoji + korte spec>", "... 4-5 stuks, bv. vervoerswijze, hond, periode, totale afstand, klimaat"],
   "tabLabel": "<kort label voor het tabblad, met vlag-emoji, bv. '🇸🇪 Zweden'>",
+  "countryCode": "<ISO 3166-1 alpha-2 landcode in kleine letters van de hoofdbestemming, bv. 'se' voor Zweden, 'hr' voor Kroatië>",
   "phases": [
     {
       "label": "Fase 1 — <naam>",
@@ -159,6 +160,7 @@ module.exports = async (req, res) => {
       barText: parsed.barText || '',
       specs: parsed.specs || [],
       tabLabel: parsed.tabLabel || ('🧭 ' + (parsed.destination || bestemming)),
+      countryCode: (parsed.countryCode || '').toLowerCase().trim() || null,
       phases: (parsed.phases || []).map(phase => ({
         ...phase,
         days: (phase.days || []).map(d => ({
