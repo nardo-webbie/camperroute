@@ -18,7 +18,7 @@
   header h1 em{font-style:italic;color:var(--olive-light);}
   .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
   .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
-  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
+  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;cursor:pointer;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
   .header-map img,.header-map svg{width:100%;height:100%;object-fit:cover;display:block;}
   @media (max-width:680px){.header-map{position:static;width:100%;height:130px;margin:0 0 1.1rem;-webkit-mask-image:none;mask-image:none;}}
   .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
@@ -1360,20 +1360,37 @@ async function submitNewTrip() {
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Eenvoudig, betrouwbaar vlag-plaatje per land (flagcdn.com, geen API-key nodig).
-const COUNTRY_FLAGS = { italy: 'it', england: 'gb', ocean: 'un' };
-function buildCountryImageHtml(countryCode) {
-  if (!countryCode) return '';
-  const imgUrl = `https://flagcdn.com/w320/${countryCode}.png`;
-  return `<div class="header-map" title="Vlag"><img src="${imgUrl}" alt="Vlag" loading="lazy"></div>`;
+// Kaartplaatje van het land met een pin per bezochte plek (MapTiler Static Maps API),
+// geen lijnen tussen de punten. Het plaatje linkt door naar een grotere versie op maptiler.com.
+const MAPTILER_KEY = 'C724HA9DRkbDNZM31t5Y';
+const COUNTRY_MARKER_COLOR = { italy: 'b85c2a', england: '5a80a8', ocean: '6aae7a' };
+function buildRouteMarkersImageHtml(points, theme) {
+  if (!points || points.length < 1) return '';
+  const color = COUNTRY_MARKER_COLOR[theme] || COUNTRY_MARKER_COLOR.italy;
+  const markers = points.map(([lat, lon]) => `${lon},${lat},%23${color}`).join('|');
+  const thumbUrl = `https://api.maptiler.com/maps/streets-v2/static/auto/320x320.png?key=${MAPTILER_KEY}&markers=${markers}`;
+  const bigUrl = `https://api.maptiler.com/maps/streets-v2/static/auto/1200x1200.png?key=${MAPTILER_KEY}&markers=${markers}`;
+  return `<a class="header-map" href="${bigUrl}" target="_blank" rel="noopener" title="Bekijk kaart met alle locaties op maptiler.com"><img src="${thumbUrl}" alt="Kaart met locaties" loading="lazy"></a>`;
 }
-function injectCountryImage(tripId, countryCode) {
+function injectRouteMarkersImage(tripId, points) {
   const view = document.querySelector(`.trip-view[data-trip="${tripId}"]`);
   const header = view && view.querySelector('header');
   if (!header || header.querySelector('.header-map')) return;
-  const html = buildCountryImageHtml(countryCode);
+  const html = buildRouteMarkersImageHtml(points, view.dataset.theme);
   if (html) header.insertAdjacentHTML('afterbegin', html);
 }
+
+const ITALY_STOP_POINTS = [
+  [46.694, 12.085], [46.619, 12.303], [46.549, 11.874], [43.05, 11.62],
+  [42.888, 11.624], [42.641, 11.086], [40.039, 15.291], [40.751, 14.489],
+  [40.821, 14.429], [40.65, 14.75], [40.627, 14.484], [41.882, 16.173],
+  [40.814, 16.418], [40.144, 18.491], [40.731, 17.423],
+];
+const ENGLAND_STOP_POINTS = [
+  [51.2802, 1.0789], [51.8767, -1.753], [50.86, -1.58], [50.7286, -2.937],
+  [50.5719, -3.916], [51.8813, -5.268], [53.36, -1.813], [54.0614, -2.159],
+  [54.3701, -2.907], [53.959, -1.0815],
+];
 
 function buildDayCardHtml(tripId, day) {
   const localId = day.id;
@@ -1403,7 +1420,11 @@ function renderTripSection(trip) {
   const totalsHtml = (trip.totals || []).map(t => `<div class="total-item"><div class="total-val">${esc(t.val)}</div><div class="total-lbl">${esc(t.lbl)}</div></div>`).join('');
   const specsHtml = (trip.specs || []).map(s => `<span>${esc(s)}</span>`).join('');
 
-  const mapHtml = buildCountryImageHtml(trip.countryCode || COUNTRY_FLAGS[trip.theme] || 'un');
+  const stopPoints = [];
+  (trip.phases || []).forEach(phase => (phase.days || []).forEach(d => {
+    if (typeof d.lat === 'number' && typeof d.lon === 'number') stopPoints.push([d.lat, d.lon]);
+  }));
+  const mapHtml = buildRouteMarkersImageHtml(stopPoints, trip.theme);
 
   const section = document.createElement('div');
   section.className = 'trip-view';
@@ -1494,8 +1515,8 @@ document.addEventListener('keydown', e => {
 
 // ─── Boot ────────────────────────────────────────────────────
 document.querySelectorAll('.trip-view').forEach(initTripView);
-injectCountryImage('italy', 'it');
-injectCountryImage('england', 'gb');
+injectRouteMarkersImage('italy', ITALY_STOP_POINTS);
+injectRouteMarkersImage('england', ENGLAND_STOP_POINTS);
 
 async function loadCustomTrips() {
   try {
