@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 
+  :root{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
   .trip-view[data-theme="italy"]{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--parchment);color:var(--ink);font-family:'Outfit',sans-serif;font-weight:300;line-height:1.65;min-height:100vh;}
@@ -17,6 +18,10 @@
   header h1 em{font-style:italic;color:var(--olive-light);}
   .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
   .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
+  .header-map{display:block;position:absolute;left:1.75rem;top:50%;transform:translateY(-50%);width:92px;height:92px;border-radius:8px;overflow:hidden;border:2px solid rgba(255,255,255,.28);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:2;background:rgba(255,255,255,.08);}
+  .header-map img{width:100%;height:100%;object-fit:cover;display:block;}
+  .header-map:hover{border-color:rgba(255,255,255,.55);}
+  @media (max-width:680px){.header-map{position:static;transform:none;margin:0 auto 1.1rem;}}
   .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
   .specs-bar{background:var(--rust);color:var(--parchment);display:flex;justify-content:center;gap:0 2.5rem;padding:.9rem 2rem;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;flex-wrap:wrap;row-gap:.4rem;}
   .container{max-width:880px;margin:0 auto;padding:2rem 1.5rem 7rem;}
@@ -94,16 +99,16 @@
   /* FAB */
   .fab{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--olive);color:#fff;border:none;border-radius:50px;padding:.9rem 1.45rem;font-family:'Outfit',sans-serif;font-size:.87rem;font-weight:500;cursor:pointer;box-shadow:0 4px 22px rgba(0,0,0,.28);z-index:100;transition:all .2s;letter-spacing:.03em;}
   .fab:hover{background:var(--olive-light);transform:translateY(-2px);}
-  .overlay{position:fixed;inset:0;background:rgba(26,20,16,.55);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .overlay{position:fixed;inset:0;background:rgba(20,16,12,.68);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;}
   .overlay.open{opacity:1;pointer-events:all;}
-  .tip-panel{position:fixed;bottom:0;left:0;right:0;background:var(--warm);border-top:2px solid var(--olive-light);padding:1.75rem 1.5rem 2rem;z-index:201;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:80vh;overflow-y:auto;}
+  .tip-panel{position:fixed;bottom:0;left:0;right:0;background-color:#faf6ee !important;opacity:1 !important;border-top:2px solid var(--olive-light,#9aae5a);padding:1.75rem 1.5rem 2rem;z-index:201;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:80vh;overflow-y:auto;box-shadow:0 -8px 30px rgba(0,0,0,.35);}
   .tip-panel.open{transform:translateY(0);}
   .panel-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;}
   .panel-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;}
   .panel-close{background:none;border:none;color:var(--stone);font-size:1.25rem;cursor:pointer;padding:.1rem .3rem;line-height:1;}
   .panel-sub{font-size:.82rem;color:var(--stone);margin-bottom:1rem;line-height:1.55;}
-  .panel-input{width:100%;min-height:90px;padding:.72rem .85rem;font-family:'Outfit',sans-serif;font-size:.87rem;color:var(--ink);background:var(--parchment);border:1px solid var(--border);resize:vertical;line-height:1.6;border-radius:2px;transition:border-color .2s;}
-  .panel-input:focus{outline:none;border-color:var(--olive);}
+  .panel-input{width:100%;min-height:90px;padding:.72rem .85rem;font-family:'Outfit',sans-serif;font-size:.87rem;color:#1a1410 !important;background-color:#f2ead8 !important;opacity:1 !important;border:1px solid var(--border,#ddd0b8);resize:vertical;line-height:1.6;border-radius:2px;transition:border-color .2s;}
+  .panel-input:focus{outline:none;border-color:var(--olive,#6b7a3a);}
   .panel-row{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;gap:1rem;}
   .panel-status{font-size:.78rem;color:var(--stone);flex:1;line-height:1.4;}
   .panel-btn{background:var(--olive);color:#fff;border:none;padding:.65rem 1.5rem;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:500;cursor:pointer;letter-spacing:.04em;border-radius:2px;transition:background .2s;white-space:nowrap;}
@@ -222,7 +227,8 @@
   /* Nieuwe reis form */
   .form-row{margin-top:.9rem;}
   .form-row label{display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--stone,#7a6a55);margin-bottom:.3rem;}
-  .form-row input[type=text], .form-row select{width:100%;padding:.6rem .7rem;border:1px solid #ddd0b8;border-radius:3px;font-family:'Outfit',sans-serif;font-size:.87rem;background:#faf6ee;}
+  .form-row input[type=text], .form-row input[type=password], .form-row select{width:100%;padding:.6rem .7rem;border:1px solid #ddd0b8;border-radius:3px;font-family:'Outfit',sans-serif;font-size:.87rem;color:#1a1410 !important;background-color:#faf6ee !important;opacity:1 !important;}
+  .tip-panel .panel-title, .tip-panel .panel-sub, .tip-panel .panel-status, .tip-panel label, .tip-panel .radio-group label{color:#1a1410 !important;}
   .radio-group{display:flex;gap:1.2rem;font-size:.85rem;}
   .radio-group label{display:flex;align-items:center;gap:.4rem;text-transform:none;letter-spacing:0;font-size:.85rem;margin:0;}
 
@@ -239,6 +245,9 @@
 
 <div class="trip-view active" data-trip="italy" data-theme="italy">
 <header>
+  <a class="header-map" href="https://www.openstreetmap.org/#map=6/45.92/11.58" target="_blank" rel="noopener" title="Bekijk routekaart">
+    <img src="https://staticmap.openstreetmap.de/staticmap.php?center=45.92,11.58&zoom=5&size=180x180&maptype=mapnik&markers=51.81,4.67,lightblue1|40.039,15.291,lightblue1&path=color:0xb85c2aff|weight:3|51.81,4.67|47.27,11.39|46.694,12.085|46.619,12.303|46.549,11.874|45.5,11.0|43.05,11.62|42.888,11.624|42.641,11.086|41.0,14.0|40.039,15.291|40.751,14.489|40.821,14.429|40.65,14.75|40.627,14.484|41.2,15.8|41.882,16.173|40.814,16.418|40.144,18.491|40.731,17.423|41.2,15.0|43.5,12.0|46.5,8.5|51.81,4.67" alt="Routekaart Dordrecht–Puglia" loading="lazy">
+  </a>
   <div class="header-label">Camperreis · Oktober 2025 · Natuur-editie</div>
   <h1>Dordrecht <em>naar</em><br>Puglia</h1>
   <div class="header-divider"></div>
@@ -610,6 +619,9 @@
 
 <div class="trip-view" data-trip="england" data-theme="england">
 <header>
+  <a class="header-map" href="https://www.openstreetmap.org/#map=6/52.47/-0.3" target="_blank" rel="noopener" title="Bekijk routekaart">
+    <img src="https://staticmap.openstreetmap.de/staticmap.php?center=52.47,-0.3&zoom=6&size=180x180&maptype=mapnik&markers=51.81,4.67,lightblue1|54.3701,-2.907,lightblue1&path=color:0x2a6b5cff|weight:3|51.81,4.67|51.2802,1.0789|51.8767,-1.753|50.86,-1.58|50.7286,-2.937|50.5719,-3.916|51.8813,-5.268|53.36,-1.813|54.0614,-2.159|54.3701,-2.907|53.959,-1.0815|51.1279,1.3134|51.81,4.67" alt="Routekaart Dordrecht–Engeland" loading="lazy">
+  </a>
   <div class="header-label">Camperreis · Juni 2027</div>
   <h1>Dordrecht <em>naar</em><br>Engeland</h1>
   <div class="header-divider"></div>
@@ -1355,6 +1367,28 @@ async function submitNewTrip() {
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+const THEME_MAP_COLORS = { italy: 'b85c2a', england: '2a6b5c', ocean: '2a6b6b' };
+
+function buildRouteMapHtml(points, theme) {
+  if (!points || points.length < 2) return '';
+  const lats = points.map(p => p[0]), lons = points.map(p => p[1]);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLon = (minLon + maxLon) / 2;
+  const latSpan = Math.max(maxLat - minLat, 0.05);
+  const lonSpan = Math.max(maxLon - minLon, 0.05);
+  const maxSpan = Math.max(latSpan, lonSpan);
+  let zoom = Math.floor(Math.log2(360 / maxSpan)) - 2;
+  zoom = Math.min(11, Math.max(3, zoom));
+  const color = THEME_MAP_COLORS[theme] || 'b85c2a';
+  const pathStr = points.map(p => p[0] + ',' + p[1]).join('|');
+  const first = points[0], last = points[points.length - 1];
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLon}&zoom=${zoom}&size=180x180&maptype=mapnik&markers=${first[0]},${first[1]},lightblue1|${last[0]},${last[1]},lightblue1&path=color:0x${color}ff|weight:3|${pathStr}`;
+  const osmLink = `https://www.openstreetmap.org/#map=${zoom}/${centerLat}/${centerLon}`;
+  return `<a class="header-map" href="${osmLink}" target="_blank" rel="noopener" title="Bekijk routekaart"><img src="${mapUrl}" alt="Routekaart" loading="lazy"></a>`;
+}
+
 function buildDayCardHtml(tripId, day) {
   const localId = day.id;
   const tags = (day.tags || []).map(t => `<span class="tag ${t.cls || 'tag-camper'}">${esc(t.label)}</span>`).join('');
@@ -1383,12 +1417,19 @@ function renderTripSection(trip) {
   const totalsHtml = (trip.totals || []).map(t => `<div class="total-item"><div class="total-val">${esc(t.val)}</div><div class="total-lbl">${esc(t.lbl)}</div></div>`).join('');
   const specsHtml = (trip.specs || []).map(s => `<span>${esc(s)}</span>`).join('');
 
+  const routePoints = [];
+  (trip.phases || []).forEach(phase => (phase.days || []).forEach(d => {
+    if (typeof d.lat === 'number' && typeof d.lon === 'number') routePoints.push([d.lat, d.lon]);
+  }));
+  const mapHtml = buildRouteMapHtml(routePoints, trip.theme);
+
   const section = document.createElement('div');
   section.className = 'trip-view';
   section.dataset.trip = trip.id;
   section.dataset.theme = trip.theme || 'italy';
   section.innerHTML = `
     <header>
+      ${mapHtml}
       <div class="header-label">${esc(trip.headerLabel)}</div>
       <h1>Dordrecht <em>naar</em><br>${esc(trip.destination)}</h1>
       <div class="header-divider"></div>

@@ -62,6 +62,8 @@ Antwoord UITSLUITEND met geldige JSON, geen markdown, geen uitleg, in exact deze
           "km": "<afstand, bv. '~320 km' of '— km' voor rustdagen>",
           "duration": "<bv. '±4 uur' of 'Rustdag'>",
           "type": "drive" of "rest",
+          "lat": <decimaal getal, breedtegraad van de belangrijkste locatie/overnachtingsplek van deze dag, bv. 45.4642>,
+          "lon": <decimaal getal, lengtegraad van diezelfde locatie, bv. 9.19>,
           "body": "<2-4 zinnen beschrijving van de dag, concreet en informatief>",
           "tags": [{"cls":"tag-camper|tag-hond|tag-wandel|tag-rust|tag-ferry|tag-warn|tag-natuur","label":"<korte tag>"}],
           "boxes": [{"cls":"box-tip|box-camper|box-warn|box-natuur","label":"<Label:>","text":"<toelichting>"}]
@@ -79,6 +81,7 @@ Antwoord UITSLUITEND met geldige JSON, geen markdown, geen uitleg, in exact deze
 
 Regels:
 - Elke dag krijgt een unieke "id" (bv. "d1", "d2", ...), oplopend door de hele reis.
+- Elke dag krijgt verplicht een realistische "lat" en "lon" (decimale graden, WGS84) van de belangrijkste locatie/overnachtingsplek die dag — dit wordt gebruikt om een routekaartje te tekenen, dus de coördinaten moeten geografisch kloppen en in de juiste volgorde een logische route vormen (begin/eind bij Dordrecht: 51.81, 4.67).
 - Bouw een logische, geografisch samenhangende route met een paar dagen reistijd heen en terug, en de rest verdeeld over de belangrijkste natuurgebieden/bezienswaardigheden van de bestemming.
 - Als het vervoer "vliegtuig" is: geen dagenlange rijdagen, wel vlucht + eventueel huurcamper/auto ter plekke, en km's slaan op verplaatsingen ter plekke.
 - Als de hond meegaat: voeg relevante hond-tags en -tips toe (hondvriendelijke campings, aangelijnd bij vee, etc). Zo niet, laat hond-gerelateerde content achterwege.
@@ -121,7 +124,7 @@ module.exports = async (req, res) => {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 8000,
         system: SCHEMA_INSTRUCTIONS,
         messages: [{ role: 'user', content: userPrompt }],
@@ -156,7 +159,14 @@ module.exports = async (req, res) => {
       barText: parsed.barText || '',
       specs: parsed.specs || [],
       tabLabel: parsed.tabLabel || ('🧭 ' + (parsed.destination || bestemming)),
-      phases: parsed.phases || [],
+      phases: (parsed.phases || []).map(phase => ({
+        ...phase,
+        days: (phase.days || []).map(d => ({
+          ...d,
+          lat: typeof d.lat === 'number' ? d.lat : null,
+          lon: typeof d.lon === 'number' ? d.lon : null,
+        })),
+      })),
       totals: parsed.totals || [],
       createdAt: new Date().toISOString(),
     };
