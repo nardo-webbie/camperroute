@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Camperroutes · Dordrecht op reis</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <style>
 
   :root{--ink:#1a1410;--parchment:#f2ead8;--warm:#faf6ee;--rust:#b85c2a;--rust-light:#d4784a;--gold:#c8942a;--gold-light:#e8b84a;--olive:#6b7a3a;--olive-light:#9aae5a;--stone:#7a6a55;--border:#ddd0b8;--mid:#4a3e2e;}
@@ -18,9 +20,17 @@
   header h1 em{font-style:italic;color:var(--olive-light);}
   .header-divider{width:60px;height:1px;background:var(--olive-light);margin:1.2rem auto;position:relative;}
   .header-meta{font-size:.85rem;color:rgba(242,234,216,.65);letter-spacing:.08em;position:relative;}
-  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
+  .header-map{display:block;position:absolute;left:0;top:0;width:36%;min-width:150px;max-width:340px;height:100%;overflow:hidden;z-index:1;cursor:pointer;-webkit-mask-image:linear-gradient(to right,#000 60%,transparent 100%);mask-image:linear-gradient(to right,#000 60%,transparent 100%);}
   .header-map img,.header-map svg{width:100%;height:100%;object-fit:cover;display:block;}
-  @media (max-width:680px){.header-map{position:static;width:100%;height:130px;margin:0 0 1.1rem;}}
+  @media (max-width:680px){.header-map{position:static;width:100%;height:130px;margin:0 0 1.1rem;-webkit-mask-image:none;mask-image:none;}}
+
+  /* Routekaart-modal (MapTiler) */
+  .map-modal-overlay{position:fixed;inset:0;background:rgba(20,16,12,.75);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+  .map-modal-overlay.open{opacity:1;pointer-events:all;}
+  .map-modal{position:relative;width:100%;max-width:960px;height:80vh;background:#1a1410;border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  #routeMapContainer{width:100%;height:100%;}
+  .map-modal-close{position:absolute;top:.75rem;right:.75rem;z-index:10;background:#1a1410;color:#f2ead8;border:1px solid rgba(255,255,255,.25);border-radius:50%;width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .map-modal-close:hover{background:#2a221a;}
   .oktober-bar{background:var(--olive);color:#fff;text-align:center;padding:.7rem 1.5rem;font-size:.82rem;font-weight:500;letter-spacing:.06em;}
   .specs-bar{background:var(--rust);color:var(--parchment);display:flex;justify-content:center;gap:0 2.5rem;padding:.9rem 2rem;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;flex-wrap:wrap;row-gap:.4rem;}
   .container{max-width:880px;margin:0 auto;padding:2rem 1.5rem 7rem;}
@@ -1148,6 +1158,13 @@
   </div>
 </div>
 
+<div class="map-modal-overlay" id="mapModalOverlay" onclick="if(event.target===this) closeRouteMapModal()">
+  <div class="map-modal">
+    <button class="map-modal-close" onclick="closeRouteMapModal()">✕</button>
+    <div id="routeMapContainer"></div>
+  </div>
+</div>
+
 <script>
 // ─── Kaart per dag (alleen Italië) ─────────────────────────────
 const DAY_MAPS = {
@@ -1361,6 +1378,54 @@ async function submitNewTrip() {
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 const THEME_MAP_COLORS = { italy: '#d4784a', england: '#5a80a8', ocean: '#6aae7a' };
+const MAPTILER_KEY = 'C724HA9DRkbDNZM31t5Y';
+const ROUTE_MAP_REGISTRY = {};
+let routeMapRegistryCounter = 0;
+let routeMapInstance = null;
+
+function closeRouteMapModal() {
+  document.getElementById('mapModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openRouteMapModal(registryId) {
+  const entry = ROUTE_MAP_REGISTRY[registryId];
+  if (!entry) return;
+  const { points, theme } = entry;
+  const overlay = document.getElementById('mapModalOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    if (routeMapInstance) { routeMapInstance.remove(); routeMapInstance = null; }
+    const color = THEME_MAP_COLORS[theme] || THEME_MAP_COLORS.italy;
+    const coords = points.map(p => [p[1], p[0]]); // MapTiler/MapLibre verwacht [lon, lat]
+    const map = new maplibregl.Map({
+      container: 'routeMapContainer',
+      style: `https://api.maptiler.com/maps/outdoor-v2/style.json?key=${MAPTILER_KEY}`,
+      center: coords[0],
+      zoom: 5,
+    });
+    routeMapInstance = map;
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.on('load', () => {
+      map.addSource('route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } } });
+      map.addLayer({ id: 'route-line', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': color, 'line-width': 4, 'line-opacity': .9 } });
+      points.forEach((p, i) => {
+        const isEnd = i === 0 || i === points.length - 1;
+        const el = document.createElement('div');
+        el.style.width = isEnd ? '16px' : '9px';
+        el.style.height = el.style.width;
+        el.style.borderRadius = '50%';
+        el.style.background = i === 0 ? '#fff' : color;
+        el.style.border = '2px solid ' + (i === 0 ? color : '#fff');
+        el.style.boxShadow = '0 1px 4px rgba(0,0,0,.4)';
+        new maplibregl.Marker({ element: el }).setLngLat([p[1], p[0]]).addTo(map);
+      });
+      const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+      map.fitBounds(bounds, { padding: 60, maxZoom: 10 });
+    });
+  }, 50);
+}
 
 // Tekent een routekaartje volledig lokaal als inline SVG (geen externe kaart-service nodig,
 // dus altijd zichtbaar, ook als een externe static-map-provider onbereikbaar/geblokkeerd is).
@@ -1388,14 +1453,14 @@ function buildRouteMapHtml(points, theme) {
   const color = THEME_MAP_COLORS[theme] || THEME_MAP_COLORS.italy;
   const [sx, sy] = pts[0];
   const [ex, ey] = pts[pts.length - 1];
-  const centerLat = (minLat + maxLat) / 2, centerLon = (minLon + maxLon) / 2;
-  const osmLink = `https://www.openstreetmap.org/#map=6/${centerLat.toFixed(3)}/${centerLon.toFixed(3)}`;
   const svg = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Routekaart">
     <polyline points="${pointsAttr}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
     <circle cx="${sx}" cy="${sy}" r="2.8" fill="#fff" stroke="${color}" stroke-width="1.4"/>
     <circle cx="${ex}" cy="${ey}" r="2.8" fill="${color}" stroke="#fff" stroke-width="1.4"/>
   </svg>`;
-  return `<a class="header-map" href="${osmLink}" target="_blank" rel="noopener" title="Bekijk routekaart">${svg}</a>`;
+  const registryId = 'rm' + (routeMapRegistryCounter++);
+  ROUTE_MAP_REGISTRY[registryId] = { points, theme };
+  return `<div class="header-map" onclick="openRouteMapModal('${registryId}')" title="Bekijk routekaart">${svg}</div>`;
 }
 
 const ITALY_ROUTE_POINTS = [
