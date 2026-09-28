@@ -51,6 +51,49 @@ const ENGLAND_DAYS = [
   { id: '21', title: 'Dover → Calais → Dordrecht',        location: 'P&O Ferries terug naar huis' },
 ];
 
+function extractJson(raw) {
+  const start = raw.indexOf('{');
+  if (start === -1) throw new Error('geen JSON-object gevonden in AI-antwoord');
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inStr) {
+      if (esc) { esc = false; continue; }
+      if (ch === '\\') { esc = true; continue; }
+      if (ch === '"') { inStr = false; }
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return raw.slice(start, i + 1);
+    }
+  }
+  throw new Error('JSON leek afgekapt (onvolledig antwoord)');
+}
+
+function sanitizeJson(str) {
+  let out = '';
+  let inStr = false, esc = false;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (inStr) {
+      if (esc) { out += ch; esc = false; continue; }
+      if (ch === '\\') { out += ch; esc = true; continue; }
+      if (ch === '"') { out += ch; inStr = false; continue; }
+      if (ch === '\n') { out += '\\n'; continue; }
+      if (ch === '\r') { continue; }
+      if (ch === '\t') { out += '\\t'; continue; }
+      out += ch;
+      continue;
+    }
+    if (ch === '"') { inStr = true; out += ch; continue; }
+    out += ch;
+  }
+  return out.replace(/,(\s*[}\]])/g, '$1');
+}
+
 async function gistHeaders() {
   return {
     Authorization: 'Bearer ' + process.env.GIST_TOKEN,
@@ -146,13 +189,28 @@ module.exports = async (req, res) => {
           messages: [{ role: 'user', content: prompt }],
         }),
       });
-      if (!aiRes.ok) { res.status(500).json({ error: 'AI-fout ' + aiRes.status }); return; }
+      if (!aiRes.ok) {
+        const errText = await aiRes.text();
+        console.error('tips AI-fout:', aiRes.status, errText.slice(0, 300));
+        res.status(500).json({ error: 'AI-fout ' + aiRes.status + ': ' + errText.slice(0, 300) });
+        return;
+      }
       const aiData = await aiRes.json();
       let parsed;
+      let raw = '';
       try {
-        parsed = JSON.parse(aiData.content[0].text.replace(/```json|```/g, '').trim());
+        const block = aiData.content && aiData.content.find(b => b.type === 'text');
+        raw = block ? block.text : '';
+        if (!raw) throw new Error('leeg antwoord van AI');
+        const jsonStr = extractJson(raw);
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch (parseErr) {
+          parsed = JSON.parse(sanitizeJson(jsonStr));
+        }
       } catch (e) {
-        res.status(500).json({ error: 'AI gaf ongeldige JSON terug' });
+        console.error('tips JSON-parsefout:', e.message, '| stop_reason:', aiData.stop_reason, '| raw:', raw.slice(0, 400));
+        res.status(500).json({ error: 'AI gaf ongeldige JSON terug: ' + e.message });
         return;
       }
 
