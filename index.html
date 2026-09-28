@@ -1189,7 +1189,7 @@
 
 <div id="customTripsEnd"></div>
 
-<button class="fab" onclick="openPanel()">＋ Tip toevoegen</button>
+<button class="fab" id="tipFab" onclick="openPanel()">＋ Tip toevoegen</button>
 <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
 
 <div class="tip-panel" id="tipPanel">
@@ -1302,6 +1302,9 @@ function switchTab(tripId) {
   currentTrip = tripId;
   document.querySelectorAll('.trip-view').forEach(v => v.classList.toggle('active', v.dataset.trip === tripId));
   document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tripId));
+  // 'weekend' is een statische bestemmingenlijst zonder dagen — daar hoort geen dag-tip bij
+  const fab = document.getElementById('tipFab');
+  if (fab) fab.style.display = (tripId === 'weekend') ? 'none' : '';
 }
 
 // ─── Card toggle (werkt voor alle trips) ───────────────────────
