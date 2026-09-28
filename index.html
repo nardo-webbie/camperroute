@@ -236,6 +236,14 @@
   .dest-row a{color:var(--rust);text-decoration:underline;}
   .dest-card .dest-drive{display:inline-block;margin-top:.35rem;background:var(--olive);color:#fff;font-size:.78rem;font-weight:500;padding:.28rem .7rem;border-radius:20px;}
   .dest-note{font-size:.78rem;color:var(--stone);margin-top:.8rem;line-height:1.5;}
+  .dest-toggle{display:flex;align-items:center;gap:.35rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--stone);cursor:pointer;user-select:none;}
+  .dest-toggle .chevron{font-size:.6rem;transition:transform .2s;}
+  .dest-card.open .dest-toggle .chevron{transform:rotate(180deg);}
+  .dest-body{display:none;margin-top:.7rem;}
+  .dest-card.open .dest-body{display:block;}
+  .dest-original{font-size:.8rem;color:var(--mid);line-height:1.55;margin-top:.7rem;padding:.7rem .85rem;background:rgba(0,0,0,.03);border-radius:8px;white-space:pre-wrap;word-break:break-word;}
+  .dest-original strong{display:block;color:var(--stone);font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:.3rem;}
+  .dest-original a{color:var(--rust);text-decoration:underline;word-break:break-all;}
 
   /* Tabbar */
   .tabbar{position:sticky;top:0;z-index:60;display:flex;gap:.4rem;background:#141414;padding:.6rem .8rem;overflow-x:auto;box-shadow:0 2px 10px rgba(0,0,0,.25);}
@@ -1128,6 +1136,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Kootwijk / Radio Kootwijk</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Heideroute Radio Kootwijk — 12,5 km, start bij Radio Kootwijk</span></div>
       <span class="dest-drive">🚐 ~1u15 rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Het voormalige radiozendstation Radio Kootwijk (het "Kremlin op de Veluwe") is zelf ook een bezienswaardigheid — mooi startpunt met parkeerplaats. Honden aangelijnd i.v.m. wild (edelherten, wilde zwijnen).</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1137,6 +1149,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Appelscha</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Grote bos- en duinroute — 10 km, start bij Buitencentrum Drents-Friese Wold, Bosberg 3</span></div>
       <span class="dest-drive">🚐 ~2u rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Bij het buitencentrum start ook de Wisentroute (safari langs de Europese bizons) — leuke combinatie na de wandeling. Rustig, bosrijk gebied, goed voor honden.</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1146,6 +1162,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Westerschouwen</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Boswachterij Westerschouwen rondje — 12 km, start bij Excursieschuur Westerschouwen, Kraaijensteinweg 140</span></div>
       <span class="dest-drive">🚐 ~1u rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Combineer met het strand van Renesse of Burgh-Haamstede (vlakbij) en een kijkje bij de Deltawerken/Neeltje Jans. Kortste rijafstand van de zeven bestemmingen — ideaal voor een spontaan weekendje.</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1155,6 +1175,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> La Roche-en-Ardenne / Nisramont</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Wandeling rond het meer van Nisramont — 14 km, circulair</span></div>
       <span class="dest-drive">🚐 ~2u45 rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> In La Roche zelf staat een mooie kasteelruïne, en vanuit Barvaux (iets verderop) kun je kajakken op de Ourthe. Heuvelachtig gebied — reken op wat klimwerk onderweg.</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1164,6 +1188,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Vijlen / Vaals</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Rondwandeling Vijlen–Vaals — 15,6 km, start Parkeerplaats Veile, Harles 23, Vijlen</span></div>
       <span class="dest-drive">🚐 ~2u15 rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Het Drielandenpunt (NL/BE/DE) en het doolhof bij het Vaalserberg-plateau liggen vlakbij — leuk als extra stop. Heuvelland, dus stevigere wandeling dan gemiddeld (15,6 km is net iets boven de 15km-grens).</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1173,6 +1201,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Gerolstein</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Gerolsteiner Felsenpfad — 8,9 km, circulair, start bij Tourist-Information, Bahnhofstraße 4</span></div>
       <span class="dest-drive">🚐 ~3u rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Vulkanisch landschap met kraterreliëf en dolomietrotsen — de kortste wandeling van het lijstje, dus goed te combineren met een tweede korte route in de omgeving (bv. bij de Dauner Maare).</div>
+      </div>
     </div>
 
     <div class="dest-card">
@@ -1182,6 +1214,10 @@
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Consdorf</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Van Consdorf naar Schiessentümpel v.v. — 14,2 km, start in Consdorf</span></div>
       <span class="dest-drive">🚐 ~3u15 rijden</span>
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        <div class="info-box box-tip"><strong>Extra:</strong> Bekend om bijzondere rotsformaties en kloven (de "Klein Zwitserland" van Luxemburg). De Schiessentümpel-waterval halverwege is een populair fotomoment — verwacht drukte in het weekend/hoogseizoen.</div>
+      </div>
     </div>
 
   </div>
@@ -1492,9 +1528,24 @@ async function submitNewTrip() {
 }
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function linkify(s) {
+  return esc(s).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
 
 // ─── Weekendjes weg: AI-gegenereerde bestemmingen ──────────────
+function toggleDest(el) {
+  const card = el.closest('.dest-card');
+  if (card) card.classList.toggle('open');
+}
 function renderDestCard(dest) {
+  const hasExtra = dest.extra && dest.extra.trim();
+  const hasInput = dest.input && dest.input.trim();
+  const bodyHtml = (hasExtra || hasInput) ? `
+      <div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div>
+      <div class="dest-body">
+        ${hasExtra ? `<div class="info-box box-tip"><strong>Extra:</strong> ${esc(dest.extra)}</div>` : ''}
+        ${hasInput ? `<div class="dest-original"><strong>Oorspronkelijke invoer</strong>${linkify(dest.input)}</div>` : ''}
+      </div>` : '';
   return `<div class="dest-card" id="${dest.id}">
       <button class="dest-del" onclick="deleteWeekend('${dest.id}')" title="Verwijderen">×</button>
       <span class="dest-ai-badge">✨ AI</span>
@@ -1504,6 +1555,7 @@ function renderDestCard(dest) {
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> ${esc(dest.plaats)}</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> ${esc(dest.wandelNaam)} — ${esc(dest.wandelKm)}, start ${esc(dest.wandelStart)}</span></div>
       <span class="dest-drive">🚐 ${esc(dest.rijtijd)}</span>
+      ${bodyHtml}
     </div>`;
 }
 async function loadCustomWeekends() {

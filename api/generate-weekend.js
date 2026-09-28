@@ -83,7 +83,7 @@ function slugify(s) {
 }
 
 const SYSTEM_PROMPT = `Je bent een reisassistent die korte weekendjes-weg met de camper voorstelt, vertrekpunt Dordrecht, Nederland (51.81, 4.67). Je antwoordt UITSLUITEND met één geldig JSON-object, zonder markdown-codeblokken, zonder inleidende of afsluitende tekst, exact in deze vorm:
-{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>"}
+{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
 
 Regels:
 - Kies een bestemming die past bij de zoekterm/wens van de gebruiker, geschikt voor een kort weekendje (max ~3,5 uur rijden vanaf Dordrecht, tenzij expliciet anders gevraagd).
@@ -176,6 +176,8 @@ module.exports = async (req, res) => {
       wandelKm: parsed.wandelKm || '',
       wandelStart: parsed.wandelStart || '',
       rijtijd: parsed.rijtijd || '',
+      extra: parsed.extra || '',
+      input: input.trim(),
       createdAt: new Date().toISOString(),
     };
 
