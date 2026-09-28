@@ -224,7 +224,10 @@
 
   /* Weekendjes-weg: destination cards */
   .dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;margin-top:1rem;}
-  .dest-card{background:var(--warm);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .dest-card{position:relative;background:var(--warm);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .dest-card .dest-del{position:absolute;top:.6rem;right:.7rem;background:none;border:none;color:var(--stone);font-size:1.1rem;cursor:pointer;line-height:1;padding:.2rem .4rem;border-radius:4px;}
+  .dest-card .dest-del:hover{color:var(--rust);background:rgba(0,0,0,.05);}
+  .dest-card .dest-ai-badge{display:inline-block;font-size:.68rem;color:var(--gold);border:1px solid var(--gold);border-radius:10px;padding:.1rem .5rem;margin-bottom:.5rem;}
   .dest-card h3{margin:0 0 .15rem;font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--ink);}
   .dest-card .dest-region{font-size:.8rem;color:var(--stone);margin-bottom:.7rem;}
   .dest-row{display:flex;gap:.55rem;align-items:flex-start;font-size:.88rem;color:var(--mid);line-height:1.4;margin-bottom:.5rem;}
@@ -1111,12 +1114,12 @@
   <div class="header-label">Weekendjes weg · korte tripjes met de camper</div>
   <h1>Weekend<em>trips</em><br>vanuit Dordrecht</h1>
   <div class="header-divider"></div>
-  <p class="header-meta">7 bestemmingen · camperplaats/camping · wandeling 8–15km · rijtijd vanaf Dordrecht</p>
+  <p class="header-meta" id="weekendCount">7 bestemmingen · camperplaats/camping · wandeling 8–15km · rijtijd vanaf Dordrecht</p>
 </header>
 <div class="oktober-bar">🌲 Ideetjes voor een los weekendje weg — camping erbij, wandelroute erbij, rijtijd erbij. Gewoon instappen.</div>
 
 <div class="container">
-  <div class="dest-grid">
+  <div class="dest-grid" id="destGrid">
 
     <div class="dest-card">
       <h3>Veluwe · Kootwijk</h3>
@@ -1190,6 +1193,7 @@
 <div id="customTripsEnd"></div>
 
 <button class="fab" id="tipFab" onclick="openPanel()">＋ Tip toevoegen</button>
+<button class="fab" id="weekendFab" onclick="openWeekendPanel()" style="display:none">✨ Weekendje toevoegen</button>
 <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
 
 <div class="tip-panel" id="tipPanel">
@@ -1250,6 +1254,20 @@
   </div>
 </div>
 
+<div class="tip-panel" id="newWeekendPanel">
+  <div class="panel-hdr">
+    <span class="panel-title">✨ Weekendje toevoegen via AI</span>
+    <button class="panel-close" onclick="closeAllPanels()">✕</button>
+  </div>
+  <p class="panel-sub">Typ een zoekterm, streek of wens (bijv. "Eifel", "bergen met de hond, max 2 uur rijden", "kustwandeling België") — de AI zoekt een passende bestemming met camping, wandeling van 8–15km en rijtijd vanaf Dordrecht.</p>
+  <textarea class="panel-input" id="weekendInput" placeholder="bijv. 'Ardennen, rustig, met bosrijke wandeling'"></textarea>
+  <input type="password" class="panel-input" id="weekendPassword" placeholder="Wachtwoord" style="min-height:unset;margin-top:.6rem;" />
+  <div class="panel-row">
+    <div class="panel-status" id="weekendStatus"></div>
+    <button class="panel-btn" id="weekendBtn" onclick="submitNewWeekend()">Genereer weekendje</button>
+  </div>
+</div>
+
 <script>
 // ─── Kaart per dag (alleen Italië) ─────────────────────────────
 const DAY_MAPS = {
@@ -1302,9 +1320,13 @@ function switchTab(tripId) {
   currentTrip = tripId;
   document.querySelectorAll('.trip-view').forEach(v => v.classList.toggle('active', v.dataset.trip === tripId));
   document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tripId));
-  // 'weekend' is een statische bestemmingenlijst zonder dagen — daar hoort geen dag-tip bij
+  // 'weekend' is een statische bestemmingenlijst zonder dagen — daar hoort geen dag-tip bij,
+  // maar wel een eigen AI-generator voor nieuwe bestemmingen
+  const isWeekend = tripId === 'weekend';
   const fab = document.getElementById('tipFab');
-  if (fab) fab.style.display = (tripId === 'weekend') ? 'none' : '';
+  if (fab) fab.style.display = isWeekend ? 'none' : '';
+  const wfab = document.getElementById('weekendFab');
+  if (wfab) wfab.style.display = isWeekend ? '' : 'none';
 }
 
 // ─── Card toggle (werkt voor alle trips) ───────────────────────
@@ -1352,6 +1374,12 @@ function closeAllPanels() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('tipPanel').classList.remove('open');
   document.getElementById('newTripPanel').classList.remove('open');
+  document.getElementById('newWeekendPanel').classList.remove('open');
+}
+function openWeekendPanel() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('newWeekendPanel').classList.add('open');
+  setTimeout(() => document.getElementById('weekendInput').focus(), 320);
 }
 
 // ─── AI Tips ─────────────────────────────────────────────────
@@ -1464,6 +1492,79 @@ async function submitNewTrip() {
 }
 
 function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── Weekendjes weg: AI-gegenereerde bestemmingen ──────────────
+function renderDestCard(dest) {
+  return `<div class="dest-card" id="${dest.id}">
+      <button class="dest-del" onclick="deleteWeekend('${dest.id}')" title="Verwijderen">×</button>
+      <span class="dest-ai-badge">✨ AI</span>
+      <h3>${esc(dest.title)}</h3>
+      <div class="dest-region">${esc(dest.region)}</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> ${esc(dest.camping)}</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> ${esc(dest.plaats)}</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> ${esc(dest.wandelNaam)} — ${esc(dest.wandelKm)}, start ${esc(dest.wandelStart)}</span></div>
+      <span class="dest-drive">🚐 ${esc(dest.rijtijd)}</span>
+    </div>`;
+}
+async function loadCustomWeekends() {
+  try {
+    const dests = await fetch('/api/generate-weekend').then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    const grid = document.getElementById('destGrid');
+    if (!grid) return;
+    (dests || []).forEach(d => grid.insertAdjacentHTML('beforeend', renderDestCard(d)));
+    updateWeekendCount();
+  } catch (e) { /* stil falen */ }
+}
+function updateWeekendCount() {
+  const grid = document.getElementById('destGrid');
+  const label = document.getElementById('weekendCount');
+  if (!grid || !label) return;
+  const n = grid.querySelectorAll('.dest-card').length;
+  label.textContent = label.textContent.replace(/^\d+\s+bestemmingen/, n + ' bestemmingen');
+}
+async function submitNewWeekend() {
+  const elInput = document.getElementById('weekendInput');
+  const elPw = document.getElementById('weekendPassword');
+  const btn = document.getElementById('weekendBtn');
+  const status = document.getElementById('weekendStatus');
+  const inputVal = elInput.value.trim();
+  const pwVal = elPw.value;
+  if (!inputVal) { status.textContent = '⚠️ Voer een zoekterm of wens in'; return; }
+  if (!pwVal)    { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
+  btn.disabled = true;
+  status.textContent = '⏳ AI zoekt een bestemming…';
+  try {
+    const r = await fetch('/api/generate-weekend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: inputVal, password: pwVal }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    const dest = await r.json();
+    const grid = document.getElementById('destGrid');
+    if (grid) grid.insertAdjacentHTML('beforeend', renderDestCard(dest));
+    updateWeekendCount();
+    document.getElementById(dest.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    status.textContent = '✓ Weekendje toegevoegd!';
+    elInput.value = '';
+    elPw.value = '';
+    setTimeout(closeAllPanels, 1200);
+  } catch (e) {
+    status.textContent = '⚠️ Fout: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+async function deleteWeekend(id) {
+  if (!confirm('Deze bestemming verwijderen?')) return;
+  const el = document.getElementById(id);
+  try {
+    const r = await fetch('/api/generate-weekend?id=' + encodeURIComponent(id), { method: 'DELETE' });
+    if (!r.ok) throw new Error('Server: ' + r.status);
+    el?.remove();
+    updateWeekendCount();
+  } catch (e) { alert('Kon bestemming niet verwijderen: ' + e.message); }
+}
 
 // Kaartje in de kop: MapTiler-rastertegels (zelfde methode als de Scope customer portal,
 // via Leaflet — de Static Maps API zit niet in dit MapTiler-plan) met een marker per
@@ -1650,6 +1751,7 @@ async function loadCustomTrips() {
   } catch (e) { /* nog geen opgeslagen eigen reizen, of nog niet gedeployed */ }
 }
 loadCustomTrips();
+loadCustomWeekends();
 </script>
 
 </body>
