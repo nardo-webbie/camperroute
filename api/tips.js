@@ -178,7 +178,8 @@ module.exports = async (req, res) => {
         return;
       }
 
-      const prompt = `Je bent reisassistent voor een camperreis. Dit zijn de dagen van de route:\n\n${daysList}\n\nGebruikersinvoer: "${input.trim()}"\n\nTaken:\n1. Kies de meest passende dag-ID voor deze tip op basis van de genoemde locatie\n2. Schrijf een nuttige, aangevulde tip in het Nederlands (2-4 zinnen)\n3. Kies een passende emoji + korte titel (max 5 woorden)\n\nAntwoord UITSLUITEND als valide JSON, geen markdown: {"dayId":"<id>","tipTitle":"emoji Titel","tipContent":"tekst"}`;
+      const systemPrompt = `Je bent reisassistent voor een camperreis. Je antwoordt UITSLUITEND met één geldig JSON-object, zonder markdown-codeblokken, zonder inleidende of afsluitende tekst, exact in deze vorm: {"dayId":"<id>","tipTitle":"emoji Titel","tipContent":"tekst"}. Niets anders dan die JSON.`;
+      const prompt = `Dit zijn de dagen van de route:\n\n${daysList}\n\nGebruikersinvoer: "${input.trim()}"\n\nTaken:\n1. Kies de meest passende dag-ID voor deze tip op basis van de genoemde locatie (kies bij twijfel de eerste dag)\n2. Schrijf een nuttige, aangevulde tip in het Nederlands (2-4 zinnen)\n3. Kies een passende emoji + korte titel (max 5 woorden)`;
 
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -186,6 +187,7 @@ module.exports = async (req, res) => {
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 400,
+          system: systemPrompt,
           messages: [{ role: 'user', content: prompt }],
         }),
       });
@@ -210,8 +212,14 @@ module.exports = async (req, res) => {
         }
       } catch (e) {
         console.error('tips JSON-parsefout:', e.message, '| stop_reason:', aiData.stop_reason, '| raw:', raw.slice(0, 400));
-        res.status(500).json({ error: 'AI gaf ongeldige JSON terug: ' + e.message });
-        return;
+        // Val niet hard om: als de AI onverwacht platte tekst teruggaf (geen JSON),
+        // gebruik die tekst zelf als tip in plaats van de gebruiker een foutmelding te tonen.
+        if (raw && raw.trim()) {
+          parsed = { dayId: '', tipTitle: '💡 Tip', tipContent: raw.trim().slice(0, 600) };
+        } else {
+          res.status(500).json({ error: 'AI gaf ongeldige JSON terug: ' + e.message });
+          return;
+        }
       }
 
       const match = days.find(d => d.id === parsed.dayId);
