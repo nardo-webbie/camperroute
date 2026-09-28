@@ -55,6 +55,30 @@ function extractJson(raw) {
   throw new Error('JSON leek afgekapt (onvolledig antwoord)');
 }
 
+// Herstelt veelvoorkomende "geldige tekst, ongeldige JSON"-fouten die LLM's maken:
+// losse regeleinden/tabs binnen string-waarden (niet ge-escaped) en komma's
+// vlak voor een sluitend `}` of `]`.
+function sanitizeJson(str) {
+  let out = '';
+  let inStr = false, esc = false;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (inStr) {
+      if (esc) { out += ch; esc = false; continue; }
+      if (ch === '\\') { out += ch; esc = true; continue; }
+      if (ch === '"') { out += ch; inStr = false; continue; }
+      if (ch === '\n') { out += '\\n'; continue; }
+      if (ch === '\r') { continue; }
+      if (ch === '\t') { out += '\\t'; continue; }
+      out += ch;
+      continue;
+    }
+    if (ch === '"') { inStr = true; out += ch; continue; }
+    out += ch;
+  }
+  return out.replace(/,(\s*[}\]])/g, '$1');
+}
+
 function slugify(s) {
   return 'trip-' + String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -166,7 +190,11 @@ module.exports = async (req, res) => {
       raw = block ? block.text : '';
       if (!raw) throw new Error('leeg antwoord van AI');
       const jsonStr = extractJson(raw);
-      parsed = JSON.parse(jsonStr);
+      try {
+        parsed = JSON.parse(jsonStr);
+      } catch (parseErr) {
+        parsed = JSON.parse(sanitizeJson(jsonStr)); // fallback: herstel losse newlines/tabs en trailing commas
+      }
     } catch (e) {
       const truncated = aiData.stop_reason === 'max_tokens';
       const hint = truncated
