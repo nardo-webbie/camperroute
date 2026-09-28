@@ -219,6 +219,21 @@
   /* Derde thema voor zelf-toegevoegde reizen */
   .trip-view[data-theme="ocean"]{--ink:#0f1f26;--parchment:#e8f0ee;--warm:#f5faf9;--rust:#2a6b6b;--rust-light:#3f8a8a;--gold:#4a8a5a;--gold-light:#6aae7a;--olive:#2a5a7a;--olive-light:#4a80a8;--stone:#5a6e6a;--border:#c8dcd6;--mid:#1e3a38;}
 
+  /* Thema voor weekendjes-weg tab */
+  .trip-view[data-theme="weekend"]{--ink:#1c2318;--parchment:#eef1e4;--warm:#f8faf2;--rust:#5c7a3a;--rust-light:#7a9a54;--gold:#b8862a;--gold-light:#d4a84a;--olive:#3a5a2a;--olive-light:#5a8040;--stone:#6a6e5a;--border:#d4dcc0;--mid:#2a3320;}
+
+  /* Weekendjes-weg: destination cards */
+  .dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;margin-top:1rem;}
+  .dest-card{background:var(--warm);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .dest-card h3{margin:0 0 .15rem;font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--ink);}
+  .dest-card .dest-region{font-size:.8rem;color:var(--stone);margin-bottom:.7rem;}
+  .dest-row{display:flex;gap:.55rem;align-items:flex-start;font-size:.88rem;color:var(--mid);line-height:1.4;margin-bottom:.5rem;}
+  .dest-row .dest-icon{flex:0 0 auto;width:1.3rem;text-align:center;}
+  .dest-row strong{color:var(--ink);}
+  .dest-row a{color:var(--rust);text-decoration:underline;}
+  .dest-card .dest-drive{display:inline-block;margin-top:.35rem;background:var(--olive);color:#fff;font-size:.78rem;font-weight:500;padding:.28rem .7rem;border-radius:20px;}
+  .dest-note{font-size:.78rem;color:var(--stone);margin-top:.8rem;line-height:1.5;}
+
   /* Tabbar */
   .tabbar{position:sticky;top:0;z-index:60;display:flex;gap:.4rem;background:#141414;padding:.6rem .8rem;overflow-x:auto;box-shadow:0 2px 10px rgba(0,0,0,.25);}
   .tab-btn{background:none;border:1px solid rgba(255,255,255,.18);color:#cfc9bd;font-family:'Outfit',sans-serif;font-size:.82rem;padding:.5rem 1rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .2s;}
@@ -243,6 +258,7 @@
 <nav class="tabbar" id="tabbar">
   <button class="tab-btn active" data-tab="italy" onclick="switchTab('italy')">🇮🇹 Italië</button>
   <button class="tab-btn" data-tab="england" onclick="switchTab('england')">🇬🇧 Engeland</button>
+  <button class="tab-btn" data-tab="weekend" onclick="switchTab('weekend')">🏕️ Weekendjes weg</button>
   <span id="customTabs"></span>
   <button class="tab-btn tab-add" onclick="openNewTripPanel()" title="Nieuwe reis toevoegen">＋</button>
 </nav>
@@ -1088,6 +1104,87 @@
 
 </div>
 
+</div>
+
+<div class="trip-view" data-trip="weekend" data-theme="weekend">
+<header>
+  <div class="header-label">Weekendjes weg · korte tripjes met de camper</div>
+  <h1>Weekend<em>trips</em><br>vanuit Dordrecht</h1>
+  <div class="header-divider"></div>
+  <p class="header-meta">7 bestemmingen · camperplaats/camping · wandeling 8–15km · rijtijd vanaf Dordrecht</p>
+</header>
+<div class="oktober-bar">🌲 Ideetjes voor een los weekendje weg — camping erbij, wandelroute erbij, rijtijd erbij. Gewoon instappen.</div>
+
+<div class="container">
+  <div class="dest-grid">
+
+    <div class="dest-card">
+      <h3>Veluwe · Kootwijk</h3>
+      <div class="dest-region">Gelderland, NL</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Beek en Hei of Camperplaats Kootwijk (Radio Kootwijk-gebied)</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Kootwijk / Radio Kootwijk</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Heideroute Radio Kootwijk — 12,5 km, start bij Radio Kootwijk</span></div>
+      <span class="dest-drive">🚐 ~1u15 rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>Drents-Friese Wold</h3>
+      <div class="dest-region">Drenthe/Friesland, NL</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Natuurcamping 't Oudewillemsveldt</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Appelscha</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Grote bos- en duinroute — 10 km, start bij Buitencentrum Drents-Friese Wold, Bosberg 3</span></div>
+      <span class="dest-drive">🚐 ~2u rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>Schouwen-Duiveland</h3>
+      <div class="dest-region">Zeeland, NL</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Ginsterveld / camperplaats Westerschouwen</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Westerschouwen</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Boswachterij Westerschouwen rondje — 12 km, start bij Excursieschuur Westerschouwen, Kraaijensteinweg 140</span></div>
+      <span class="dest-drive">🚐 ~1u rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>La Roche-en-Ardenne</h3>
+      <div class="dest-region">Ardennen, België</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Spineuse of Camping Op 't Anker (Nisramont)</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> La Roche-en-Ardenne / Nisramont</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Wandeling rond het meer van Nisramont — 14 km, circulair</span></div>
+      <span class="dest-drive">🚐 ~2u45 rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>Vaals · Zuid-Limburg</h3>
+      <div class="dest-region">Limburg, NL</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Vijlerhof (Vijlen)</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Vijlen / Vaals</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Rondwandeling Vijlen–Vaals — 15,6 km, start Parkeerplaats Veile, Harles 23, Vijlen</span></div>
+      <span class="dest-drive">🚐 ~2u15 rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>Vulkaneifel · Gerolstein</h3>
+      <div class="dest-region">Rijnland-Palts, Duitsland</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Alfmühle</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Gerolstein</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Gerolsteiner Felsenpfad — 8,9 km, circulair, start bij Tourist-Information, Bahnhofstraße 4</span></div>
+      <span class="dest-drive">🚐 ~3u rijden</span>
+    </div>
+
+    <div class="dest-card">
+      <h3>Mullerthal · Consdorf</h3>
+      <div class="dest-region">Luxemburg</div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> Camping Martbusch</span></div>
+      <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> Consdorf</span></div>
+      <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> Van Consdorf naar Schiessentümpel v.v. — 14,2 km, start in Consdorf</span></div>
+      <span class="dest-drive">🚐 ~3u15 rijden</span>
+    </div>
+
+  </div>
+
+  <p class="dest-note">Rijtijden zijn indicaties vanaf Dordrecht bij normale verkeersdrukte. Campingnamen en wandelroutes zijn een startpunt — check actuele openingstijden/beschikbaarheid voor vertrek.</p>
+</div>
 </div>
 
 <div id="customTripsEnd"></div>
