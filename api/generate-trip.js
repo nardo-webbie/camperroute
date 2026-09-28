@@ -33,6 +33,28 @@ async function writeGistFile(filename, data) {
   if (!res.ok) throw new Error('Kon gist niet bijwerken (status ' + res.status + ')');
 }
 
+function extractJson(raw) {
+  const start = raw.indexOf('{');
+  if (start === -1) throw new Error('geen JSON-object gevonden in AI-antwoord');
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return raw.slice(start, i + 1);
+    }
+  }
+  throw new Error('JSON leek afgekapt (onvolledig antwoord)');
+}
+
 function slugify(s) {
   return 'trip-' + String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -126,7 +148,7 @@ module.exports = async (req, res) => {
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 8000,
+        max_tokens: 16000,
         system: SCHEMA_INSTRUCTIONS,
         messages: [{ role: 'user', content: userPrompt }],
       }),
@@ -138,12 +160,20 @@ module.exports = async (req, res) => {
     }
     const aiData = await aiRes.json();
     let parsed;
+    let raw = '';
     try {
-      const raw = aiData.content.find(b => b.type === 'text').text;
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch[0]);
+      const block = aiData.content && aiData.content.find(b => b.type === 'text');
+      raw = block ? block.text : '';
+      if (!raw) throw new Error('leeg antwoord van AI');
+      const jsonStr = extractJson(raw);
+      parsed = JSON.parse(jsonStr);
     } catch (e) {
-      res.status(500).json({ error: 'AI gaf ongeldige JSON terug' });
+      const truncated = aiData.stop_reason === 'max_tokens';
+      const hint = truncated
+        ? ' — antwoord werd afgekapt (te lange reis voor 1 keer genereren, probeer een kortere periode)'
+        : '';
+      console.error('generate-trip JSON-parsefout:', e.message, '| stop_reason:', aiData.stop_reason, '| raw (laatste 400 tekens):', raw.slice(-400));
+      res.status(500).json({ error: 'AI gaf ongeldige JSON terug: ' + e.message + hint });
       return;
     }
 
