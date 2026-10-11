@@ -1122,7 +1122,7 @@
   <div class="header-label">Weekendjes weg · korte tripjes met de camper</div>
   <h1>Weekend<em>trips</em><br>vanuit Dordrecht</h1>
   <div class="header-divider"></div>
-  <p class="header-meta" id="weekendCount">7 bestemmingen · camperplaats/camping · wandeling 8–15km · rijtijd vanaf Dordrecht</p>
+  <p class="header-meta" id="weekendCount">7 bestemmingen · camperplaats/camping · wandeling 8–15km · gesorteerd op rijtijd vanaf Dordrecht (kortste eerst)</p>
 </header>
 <div class="oktober-bar">🌲 Ideetjes voor een los weekendje weg — camping erbij, wandelroute erbij, rijtijd erbij. Gewoon instappen.</div>
 
@@ -1567,10 +1567,27 @@ async function loadCustomWeekends() {
     updateWeekendCount();
   } catch (e) { /* stil falen */ }
 }
+// Rijtijd uit tekst als '~2u45 rijden', '~1u', '2 uur 30', '90 min' naar minuten (onleesbaar = achteraan)
+function parseDriveMinutes(txt) {
+  const t = (txt || '').toLowerCase().replace(',', '.');
+  const h = t.match(/(\d+(?:\.\d+)?)\s*(?:uur|u|h)(?![a-z])\s*(\d+)?/);
+  if (h) return Math.round(parseFloat(h[1]) * 60) + (h[2] ? parseInt(h[2], 10) : 0);
+  const m = t.match(/(\d+)\s*min/);
+  return m ? parseInt(m[1], 10) : Infinity;
+}
+function sortDestCards() {
+  const grid = document.getElementById('destGrid');
+  if (!grid) return;
+  const cards = [...grid.querySelectorAll(':scope > .dest-card')];
+  const keyed = cards.map((c, i) => ({ c, i, min: parseDriveMinutes(c.querySelector('.dest-drive')?.textContent) }));
+  keyed.sort((a, b) => a.min - b.min || a.i - b.i);
+  keyed.forEach(k => grid.appendChild(k.c));
+}
 function updateWeekendCount() {
   const grid = document.getElementById('destGrid');
   const label = document.getElementById('weekendCount');
   if (!grid || !label) return;
+  sortDestCards();
   const n = grid.querySelectorAll('.dest-card').length;
   label.textContent = label.textContent.replace(/^\d+\s+bestemmingen/, n + ' bestemmingen');
 }
@@ -1803,6 +1820,7 @@ async function loadCustomTrips() {
   } catch (e) { /* nog geen opgeslagen eigen reizen, of nog niet gedeployed */ }
 }
 loadCustomTrips();
+sortDestCards();
 loadCustomWeekends();
 </script>
 
