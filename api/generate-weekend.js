@@ -76,6 +76,14 @@ function sanitizeJson(str) {
   return out.replace(/,(\s*[}\]])/g, '$1');
 }
 
+// Begint de invoer met "camping ...", dan is dat de camping (tot de eerste komma/punt/regeleinde/streep).
+function namedCamping(input) {
+  const m = String(input || '').trim().match(/^camping\b[^,.;\n(]*?(?=\s+[-–—]\s|\s*[,.;\n(]|$)/i);
+  const name = m ? m[0].trim() : '';
+  const words = name.split(/\s+/);
+  return words.length >= 2 && !/^(met|in|bij|aan|voor|op|nabij|rond|vlakbij|zonder|en|of|of)$/i.test(words[1]) ? name : '';
+}
+
 function slugify(s) {
   return 'weekend-' + String(s).toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -89,6 +97,7 @@ Regels:
 - Kies een bestemming die past bij de zoekterm/wens van de gebruiker, geschikt voor een kort weekendje (max ~3,5 uur rijden vanaf Dordrecht, tenzij expliciet anders gevraagd).
 - De wandeling moet een reële, bestaande route zijn van ongeveer 8 tot 15 km (bij voorkeur circulair).
 - Gebruik realistische, bestaande plaatsnamen en camping-/wandelroutenamen — geen verzonnen namen.
+- Begint de zoekterm/wens van de gebruiker met het woord "camping" (bv. "Camping De Rimboe, Garderen, rustig"), dan is de daar genoemde camping de bestemming: gebruik EXACT die camping (naam zoals genoemd) als "camping", kies de plaats, wandeling en rijtijd rondom die camping.
 - Schrijf alles in het Nederlands.`;
 
 module.exports = async (req, res) => {
@@ -166,11 +175,13 @@ module.exports = async (req, res) => {
       return;
     }
 
+    const campingFromInput = namedCamping(input);
+    const normalize = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
     const dest = {
       id: slugify(parsed.title || input),
       title: parsed.title || input.trim(),
       region: parsed.region || '',
-      camping: parsed.camping || '',
+      camping: campingFromInput && !normalize(parsed.camping).includes(normalize(campingFromInput).split(' ').slice(0, 2).join(' ')) ? campingFromInput : (parsed.camping || campingFromInput || ''),
       plaats: parsed.plaats || '',
       wandelNaam: parsed.wandelNaam || '',
       wandelKm: parsed.wandelKm || '',
