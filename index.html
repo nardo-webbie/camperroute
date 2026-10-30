@@ -1537,6 +1537,22 @@ function toggleDest(el) {
   const card = el.closest('.dest-card');
   if (card) card.classList.toggle('open');
 }
+function supermarktRow(d) {
+  if (!d.supermarkt) return '';
+  return `<div class="dest-row dest-supermarkt"><span class="dest-icon">🛒</span><span><strong>Supermarkt:</strong> ${esc(d.supermarkt)}${d.fietsAfstand ? ' — 🚲 ' + esc(d.fietsAfstand) : ''}</span></div>`;
+}
+// Vaste kaarten (HTML) krijgen hun supermarkt-regel uit weekends-extra.json, per kaarttitel
+async function loadStaticExtras() {
+  try {
+    const extra = await fetch('/api/generate-weekend?extra=1').then(r => { if (!r.ok) throw new Error(); return r.json(); });
+    document.querySelectorAll('#destGrid > .dest-card:not([id])').forEach(card => {
+      const title = card.querySelector('h3')?.textContent.trim();
+      const e = extra && extra[title];
+      if (!e || card.querySelector('.dest-supermarkt')) return;
+      card.querySelector('.dest-drive')?.insertAdjacentHTML('beforebegin', supermarktRow(e));
+    });
+  } catch (err) { /* stil falen */ }
+}
 function renderDestCard(dest) {
   const hasExtra = dest.extra && dest.extra.trim();
   const hasInput = dest.input && dest.input.trim();
@@ -1554,6 +1570,7 @@ function renderDestCard(dest) {
       <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> ${esc(dest.camping)}</span></div>
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> ${esc(dest.plaats)}</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> ${esc(dest.wandelNaam)} — ${esc(dest.wandelKm)}, start ${esc(dest.wandelStart)}</span></div>
+      ${supermarktRow(dest)}
       <span class="dest-drive">🚐 ${esc(dest.rijtijd)}</span>
       ${bodyHtml}
     </div>`;
@@ -1821,6 +1838,7 @@ async function loadCustomTrips() {
 }
 loadCustomTrips();
 sortDestCards();
+loadStaticExtras();
 loadCustomWeekends();
 </script>
 

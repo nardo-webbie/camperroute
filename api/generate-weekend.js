@@ -91,18 +91,24 @@ function slugify(s) {
 }
 
 const SYSTEM_PROMPT = `Je bent een reisassistent die korte weekendjes-weg met de camper voorstelt, vertrekpunt Dordrecht, Nederland (51.81, 4.67). Je antwoordt UITSLUITEND met één geldig JSON-object, zonder markdown-codeblokken, zonder inleidende of afsluitende tekst, exact in deze vorm:
-{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
+{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","supermarkt":"<naam + plaats van de dichtstbijzijnde supermarkt bij de camping, bv. 'Albert Heijn, Garderen'>","fietsAfstand":"<geschatte fietsafstand camping → supermarkt, bv. '~3 km (±12 min)'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
 
 Regels:
 - Kies een bestemming die past bij de zoekterm/wens van de gebruiker, geschikt voor een kort weekendje (max ~3,5 uur rijden vanaf Dordrecht, tenzij expliciet anders gevraagd).
 - De wandeling moet een reële, bestaande route zijn van ongeveer 8 tot 15 km (bij voorkeur circulair).
 - Gebruik realistische, bestaande plaatsnamen en camping-/wandelroutenamen — geen verzonnen namen.
 - Begint de zoekterm/wens van de gebruiker met het woord "camping" (bv. "Camping De Rimboe, Garderen, rustig"), dan is de daar genoemde camping de bestemming: gebruik EXACT die camping (naam zoals genoemd) als "camping", kies de plaats, wandeling en rijtijd rondom die camping.
+- Noem bij "supermarkt" een echt bestaande supermarkt en geef bij "fietsAfstand" een realistische schatting (afstand in km en fietstijd); het is een indicatie, geen routeplanner-uitkomst.
 - Schrijf alles in het Nederlands.`;
 
 module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
+      if (req.query && req.query.extra) {
+        // aanvullingen voor de vaste kaarten uit index.html (gevuld door scripts/fill-supermarkt.js)
+        res.status(200).json(await readGistFile('weekends-extra.json', {}));
+        return;
+      }
       const dests = await readGistFile('weekends.json', []);
       res.status(200).json(dests);
       return;
@@ -187,6 +193,8 @@ module.exports = async (req, res) => {
       wandelKm: parsed.wandelKm || '',
       wandelStart: parsed.wandelStart || '',
       rijtijd: parsed.rijtijd || '',
+      supermarkt: parsed.supermarkt || '',
+      fietsAfstand: parsed.fietsAfstand || '',
       extra: parsed.extra || '',
       input: input.trim(),
       createdAt: new Date().toISOString(),
