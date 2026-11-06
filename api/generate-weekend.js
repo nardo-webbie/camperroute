@@ -169,7 +169,7 @@ module.exports = async (req, res) => {
     // Campz (live campings/camperplaatsen-database) via de MCP-connector van de Anthropic API.
     // Faalt dit (geen toegang, token ontbreekt, API-wijziging), dan vallen we terug op de oude methode.
     const campzUrl = process.env.CAMPZ_MCP_URL || 'https://mcp.campz.app';
-    const useCampz = process.env.CAMPZ_ENABLED !== 'off';
+    const useCampz = process.env.CAMPZ_ENABLED !== 'off' && !!process.env.CAMPZ_TOKEN;
 
     async function callAI(withCampz) {
       const headers = { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID || 'wrkspc_01Q2r3TTRGRiovzfU84LEm1V', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };

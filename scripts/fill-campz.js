@@ -21,7 +21,9 @@ const { ANTHROPIC_API_KEY, GIST_ID, GIST_TOKEN, CAMPZ_TOKEN } = process.env;
 const CAMPZ_URL = process.env.CAMPZ_MCP_URL || 'https://mcp.campz.app';
 const DRY = process.argv.includes('--dry-run');
 const FORCE = process.argv.includes('--force');
-if (!ANTHROPIC_API_KEY || !GIST_ID || !GIST_TOKEN) {
+const LIST = process.argv.includes('--list');
+const APPLY = (process.argv.find(a => a.startsWith('--apply=')) || '').slice(8);
+if (!GIST_ID || !GIST_TOKEN || (!LIST && !APPLY && !ANTHROPIC_API_KEY)) {
   console.error('Zet ANTHROPIC_API_KEY, GIST_ID en GIST_TOKEN als omgevingsvariabelen (en CAMPZ_TOKEN als Campz die vereist).');
   process.exit(1);
 }
@@ -92,6 +94,26 @@ async function ask(d) {
 (async () => {
   const dests = await readGist('weekends.json', []);
   let done = 0;
+
+  // Zonder Campz-API: --list toont de weekenden, --apply=bestand.json voert door Claude opgezochte Campz-data door
+  if (LIST) {
+    console.log(JSON.stringify(dests.map(d => ({ title: d.title, region: d.region, plaats: d.plaats, camping: d.camping, input: d.input || '' })), null, 2));
+    return;
+  }
+  if (APPLY) {
+    const patch = JSON.parse(require('fs').readFileSync(APPLY, 'utf8'));
+    for (const p of patch) {
+      const d = dests.find(x => x.title === p.title);
+      if (!d) { console.error('✗ niet gevonden: ' + p.title); continue; }
+      const { title, ...fields } = p;
+      Object.assign(d, fields);
+      console.log('✓ ' + d.title);
+      done++;
+    }
+    if (DRY) return console.log(`\nDry-run: ${done} aangepast.`);
+    if (done) await writeGist('weekends.json', dests);
+    return console.log(`\n${done} weekenden bijgewerkt. Ververs de site.`);
+  }
   for (const d of dests) {
     if ((d.campzUrl || d.camperplaatsUrl) && !FORCE) continue;
     try {
