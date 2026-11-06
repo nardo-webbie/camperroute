@@ -103,12 +103,11 @@ async function ask(d) {
   if (APPLY) {
     const patch = JSON.parse(require('fs').readFileSync(APPLY, 'utf8'));
     for (const p of patch) {
-      const d = dests.find(x => x.title === p.title);
-      if (!d) { console.error('✗ niet gevonden: ' + p.title); continue; }
+      const hits = dests.filter(x => x.title === p.title);
+      if (!hits.length) { console.error('✗ niet gevonden: ' + p.title); continue; }
       const { title, ...fields } = p;
-      Object.assign(d, fields);
-      console.log('✓ ' + d.title);
-      done++;
+      for (const d of hits) { Object.assign(d, fields); done++; }
+      console.log('✓ ' + p.title + (hits.length > 1 ? ' (' + hits.length + '×)' : ''));
     }
     if (DRY) return console.log(`\nDry-run: ${done} aangepast.`);
     if (done) await writeGist('weekends.json', dests);
