@@ -90,6 +90,15 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36);
 }
 
+const CAMPZ_ADDENDUM = `
+
+Je hebt toegang tot de Campz-tools (echte campings en camperplaatsen). Gebruik die om de camping te kiezen:
+- Bepaal eerst zelf de coördinaten van de bestemming/plaats. Zoek met find_places_near (radiusKm ~10, placeTypes ["campsite","motorhome_area"], bij voorkeur activities ["supermarket"], sortBy "rating" met minReviews 1) en kies een echt bestaande plek uit de resultaten. Is een camping genoemd in de zoekterm, zoek dan rond die plaats naar precies die camping.
+- Titels zijn soms straatadressen: gebruik get_place_details voor de echte naam als dat nodig is.
+- Zet de naam in "camping" en de Campz-pagina in "campzUrl" (veld toevoegen aan het JSON-object). Staat de genoemde camping niet in Campz, gebruik dan de genoemde naam en laat "campzUrl" leeg.
+- Heeft de plek de activiteit "supermarket", dan ligt er een supermarkt binnen 2 km: gebruik dat voor "supermarkt"/"fietsAfstand" (alleen schatten als de afstand niet bekend is).
+- Antwoord, na het zoeken, nog steeds UITSLUITEND met het ene JSON-object.`;
+
 const SYSTEM_PROMPT = `Je bent een reisassistent die korte weekendjes-weg met de camper voorstelt, vertrekpunt Dordrecht, Nederland (51.81, 4.67). Je antwoordt UITSLUITEND met één geldig JSON-object, zonder markdown-codeblokken, zonder inleidende of afsluitende tekst, exact in deze vorm:
 {"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","supermarkt":"<naam + plaats van de dichtstbijzijnde supermarkt bij de camping, bv. 'Albert Heijn, Garderen'>","fietsAfstand":"<geschatte fietsafstand camping → supermarkt, bv. '~3 km (±12 min)'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
 
@@ -146,40 +155,58 @@ module.exports = async (req, res) => {
 
     const userPrompt = `Zoekterm/wens: "${input.trim()}"`;
 
-    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({
+    // Campz (live campings/camperplaatsen-database) via de MCP-connector van de Anthropic API.
+    // Faalt dit (geen toegang, token ontbreekt, API-wijziging), dan vallen we terug op de oude methode.
+    const campzUrl = process.env.CAMPZ_MCP_URL || 'https://mcp.campz.app';
+    const useCampz = process.env.CAMPZ_ENABLED !== 'off';
+
+    async function callAI(withCampz) {
+      const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
+      const body = {
         model: 'claude-sonnet-5',
-        max_tokens: 1500,
-        system: SYSTEM_PROMPT,
+        max_tokens: withCampz ? 4000 : 1500,
+        system: withCampz ? SYSTEM_PROMPT + CAMPZ_ADDENDUM : SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }],
-      }),
-    });
-    if (!aiRes.ok) {
-      const errText = await aiRes.text();
-      console.error('generate-weekend AI-fout:', aiRes.status, errText.slice(0, 300));
-      res.status(500).json({ error: 'AI-fout ' + aiRes.status + ': ' + errText.slice(0, 300) });
-      return;
-    }
-    const aiData = await aiRes.json();
-    let parsed;
-    let raw = '';
-    try {
-      const block = aiData.content && aiData.content.find(b => b.type === 'text');
-      raw = block ? block.text : '';
+      };
+      if (withCampz) {
+        headers['anthropic-beta'] = 'mcp-client-2025-04-04';
+        const server = { type: 'url', url: campzUrl, name: 'campz' };
+        if (process.env.CAMPZ_TOKEN) server.authorization_token = process.env.CAMPZ_TOKEN;
+        body.mcp_servers = [server];
+      }
+      const aiRes = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!aiRes.ok) {
+        const errText = await aiRes.text();
+        throw new Error('AI-fout ' + aiRes.status + ': ' + errText.slice(0, 300));
+      }
+      const aiData = await aiRes.json();
+      // laatste tekstblok = het antwoord (eerdere blokken kunnen tussentekst bij tool-aanroepen zijn)
+      const texts = (aiData.content || []).filter(b => b.type === 'text');
+      const raw = texts.length ? texts[texts.length - 1].text : '';
       if (!raw) throw new Error('leeg antwoord van AI');
       const jsonStr = extractJson(raw);
-      try {
-        parsed = JSON.parse(jsonStr);
-      } catch (parseErr) {
-        parsed = JSON.parse(sanitizeJson(jsonStr));
+      let parsed;
+      try { parsed = JSON.parse(jsonStr); } catch (e) { parsed = JSON.parse(sanitizeJson(jsonStr)); }
+      const usedCampz = (aiData.content || []).some(b => b.type === 'mcp_tool_result' && !b.is_error);
+      return { parsed, usedCampz };
+    }
+
+    let parsed, usedCampz = false;
+    try {
+      if (useCampz) {
+        try {
+          ({ parsed, usedCampz } = await callAI(true));
+        } catch (e) {
+          console.error('generate-weekend: Campz mislukt, val terug op zonder Campz:', e.message);
+        }
       }
+      if (!parsed) ({ parsed } = await callAI(false));
     } catch (e) {
-      console.error('generate-weekend JSON-parsefout:', e.message, '| stop_reason:', aiData.stop_reason, '| raw:', raw.slice(0, 400));
-      res.status(500).json({ error: 'AI gaf ongeldige JSON terug: ' + e.message });
+      console.error('generate-weekend fout:', e.message);
+      res.status(500).json({ error: e.message });
       return;
     }
+    if (!usedCampz) parsed.campzUrl = '';
 
     const campingFromInput = namedCamping(input);
     const normalize = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
@@ -193,6 +220,7 @@ module.exports = async (req, res) => {
       wandelKm: parsed.wandelKm || '',
       wandelStart: parsed.wandelStart || '',
       rijtijd: parsed.rijtijd || '',
+      campzUrl: /^https:\/\//.test(parsed.campzUrl || '') ? parsed.campzUrl : '',
       supermarkt: parsed.supermarkt || '',
       fietsAfstand: parsed.fietsAfstand || '',
       extra: parsed.extra || '',

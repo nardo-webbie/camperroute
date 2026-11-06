@@ -1567,7 +1567,7 @@ function renderDestCard(dest) {
       <span class="dest-ai-badge">✨ AI</span>
       <h3>${esc(dest.title)}</h3>
       <div class="dest-region">${esc(dest.region)}</div>
-      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> ${esc(dest.camping)}</span></div>
+      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> ${dest.campzUrl ? `<a href="${esc(dest.campzUrl)}" target="_blank" rel="noopener">${esc(dest.camping)}</a>` : esc(dest.camping)}</span></div>
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> ${esc(dest.plaats)}</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> ${esc(dest.wandelNaam)} — ${esc(dest.wandelKm)}, start ${esc(dest.wandelStart)}</span></div>
       ${supermarktRow(dest)}
