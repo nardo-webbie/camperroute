@@ -9,6 +9,8 @@
  *    opgeslagen in weekends-extra.json, per kaarttitel. De site legt die er bij het
  *    laden overheen (zie loadStaticExtras in index.html).
  *
+ * Geeft de API een fout over 'workspace', zet dan ook ANTHROPIC_WORKSPACE_ID=<id van je workspace>.
+ *
  * Gebruik (Node 18+):
  *   ANTHROPIC_API_KEY=... GIST_ID=... GIST_TOKEN=... node scripts/fill-supermarkt.js [--dry-run] [--force]
  *
@@ -77,7 +79,7 @@ async function ask(d) {
   const prompt = `Bestemming: ${d.title} (${d.region || ''})\nCamping: ${d.camping}\nPlaats: ${d.plaats}`;
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    headers: { ...(process.env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID } : {}), 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 300, system: SYSTEM, messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) throw new Error('AI-fout ' + res.status + ': ' + (await res.text()).slice(0, 200));

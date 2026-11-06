@@ -3,6 +3,8 @@
  * Eenmalig script: werkt de bestaande (AI-toegevoegde) weekendjes-weg in de gist bij
  * met een camping + camperplaats uit Campz, inclusief Campz-link en reviewcijfer.
  *
+ * Geeft de API een fout over 'workspace', zet dan ook ANTHROPIC_WORKSPACE_ID=<id van je workspace>.
+ *
  * Gebruik (Node 18+):
  *   ANTHROPIC_API_KEY=... GIST_ID=... GIST_TOKEN=... [CAMPZ_TOKEN=...] node scripts/fill-campz.js [--dry-run] [--force]
  *
@@ -70,7 +72,7 @@ async function ask(d) {
   if (CAMPZ_TOKEN) server.authorization_token = CAMPZ_TOKEN;
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'mcp-client-2025-04-04', 'content-type': 'application/json' },
+    headers: { ...(process.env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID } : {}), 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'mcp-client-2025-04-04', 'content-type': 'application/json' },
     body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 4000, system: SYSTEM, mcp_servers: [server], messages: [{ role: 'user', content: prompt }] }),
   });
   if (!res.ok) throw new Error('AI-fout ' + res.status + ': ' + (await res.text()).slice(0, 200));
