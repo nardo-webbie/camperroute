@@ -172,7 +172,7 @@ module.exports = async (req, res) => {
     const useCampz = process.env.CAMPZ_ENABLED !== 'off';
 
     async function callAI(withCampz) {
-      const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
+      const headers = { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID || 'wrkspc_01Q2r3TTRGRiovzfU84LEm1V', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
       const body = {
         model: 'claude-sonnet-5',
         max_tokens: withCampz ? 4000 : 1500,

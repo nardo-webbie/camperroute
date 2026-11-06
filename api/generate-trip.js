@@ -169,7 +169,7 @@ module.exports = async (req, res) => {
 
     const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      headers: { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID || 'wrkspc_01Q2r3TTRGRiovzfU84LEm1V', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 16000,
