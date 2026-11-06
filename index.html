@@ -235,6 +235,8 @@
   .dest-row strong{color:var(--ink);}
   .dest-row a{color:var(--rust);text-decoration:underline;}
   .dest-card .dest-drive{display:inline-block;margin-top:.35rem;background:var(--olive);color:#fff;font-size:.78rem;font-weight:500;padding:.28rem .7rem;border-radius:20px;}
+  .dest-rating{display:inline-block;margin-left:.3rem;font-size:.75rem;font-weight:600;color:var(--gold);white-space:nowrap;}
+  .dest-rating small{font-weight:400;color:var(--stone);}
   .dest-note{font-size:.78rem;color:var(--stone);margin-top:.8rem;line-height:1.5;}
   .dest-toggle{display:flex;align-items:center;gap:.35rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--stone);cursor:pointer;user-select:none;}
   .dest-toggle .chevron{font-size:.6rem;transition:transform .2s;}
@@ -1537,6 +1539,14 @@ function toggleDest(el) {
   const card = el.closest('.dest-card');
   if (card) card.classList.toggle('open');
 }
+function ratingBadge(r, n) {
+  return r ? ` <span class="dest-rating" title="Review op Campz">⭐ ${r}${n ? ' <small>(' + n + ')</small>' : ''}</span>` : '';
+}
+function plekRow(icon, label, name, url, r, n) {
+  if (!name) return '';
+  const nm = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(name)}</a>` : esc(name);
+  return `<div class="dest-row"><span class="dest-icon">${icon}</span><span><strong>${label}:</strong> ${nm}${ratingBadge(r, n)}</span></div>`;
+}
 function supermarktRow(d) {
   if (!d.supermarkt) return '';
   return `<div class="dest-row dest-supermarkt"><span class="dest-icon">🛒</span><span><strong>Supermarkt:</strong> ${esc(d.supermarkt)}${d.fietsAfstand ? ' — 🚲 ' + esc(d.fietsAfstand) : ''}</span></div>`;
@@ -1567,7 +1577,8 @@ function renderDestCard(dest) {
       <span class="dest-ai-badge">✨ AI</span>
       <h3>${esc(dest.title)}</h3>
       <div class="dest-region">${esc(dest.region)}</div>
-      <div class="dest-row"><span class="dest-icon">🏕️</span><span><strong>Camping:</strong> ${dest.campzUrl ? `<a href="${esc(dest.campzUrl)}" target="_blank" rel="noopener">${esc(dest.camping)}</a>` : esc(dest.camping)}</span></div>
+      ${plekRow('🏕️', 'Camping', dest.camping, dest.campzUrl, dest.campingRating, dest.campingReviews)}
+      ${plekRow('🚐', 'Camperplaats', dest.camperplaats, dest.camperplaatsUrl, dest.camperplaatsRating, dest.camperplaatsReviews)}
       <div class="dest-row"><span class="dest-icon">📍</span><span><strong>Plaats:</strong> ${esc(dest.plaats)}</span></div>
       <div class="dest-row"><span class="dest-icon">🥾</span><span><strong>Wandeling:</strong> ${esc(dest.wandelNaam)} — ${esc(dest.wandelKm)}, start ${esc(dest.wandelStart)}</span></div>
       ${supermarktRow(dest)}

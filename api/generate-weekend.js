@@ -84,6 +84,16 @@ function namedCamping(input) {
   return words.length >= 2 && !/^(met|in|bij|aan|voor|op|nabij|rond|vlakbij|zonder|en|of|of)$/i.test(words[1]) ? name : '';
 }
 
+// Reviewcijfers alleen bewaren als ze uit Campz kwamen en geldig zijn (0-5); nooit een geschat cijfer tonen.
+function cleanRating(v, fromCampz) {
+  const n = parseFloat(String(v ?? '').replace(',', '.'));
+  return fromCampz && isFinite(n) && n > 0 && n <= 5 ? Math.round(n * 10) / 10 : null;
+}
+function cleanCount(v, fromCampz) {
+  const n = parseInt(v, 10);
+  return fromCampz && isFinite(n) && n > 0 ? n : null;
+}
+
 function slugify(s) {
   return 'weekend-' + String(s).toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -95,12 +105,13 @@ const CAMPZ_ADDENDUM = `
 Je hebt toegang tot de Campz-tools (echte campings en camperplaatsen). Gebruik die om de camping te kiezen:
 - Bepaal eerst zelf de coördinaten van de bestemming/plaats. Zoek met find_places_near (radiusKm ~10, placeTypes ["campsite","motorhome_area"], bij voorkeur activities ["supermarket"], sortBy "rating" met minReviews 1) en kies een echt bestaande plek uit de resultaten. Is een camping genoemd in de zoekterm, zoek dan rond die plaats naar precies die camping.
 - Titels zijn soms straatadressen: gebruik get_place_details voor de echte naam als dat nodig is.
+- Zoek twee soorten plekken: een camping (placeTypes ["campsite"]) en een camperplaats (placeTypes ["motorhome_area"]), elk met een eigen zoekopdracht. Neem het reviewcijfer (rating) en het aantal reviews letterlijk over uit het Campz-resultaat; verzin of schat NOOIT een cijfer. Heeft een plek geen rating, laat het veld dan leeg. Geen camperplaats gevonden: laat "camperplaats" leeg.
 - Zet de naam in "camping" en de Campz-pagina in "campzUrl" (veld toevoegen aan het JSON-object). Staat de genoemde camping niet in Campz, gebruik dan de genoemde naam en laat "campzUrl" leeg.
 - Heeft de plek de activiteit "supermarket", dan ligt er een supermarkt binnen 2 km: gebruik dat voor "supermarkt"/"fietsAfstand" (alleen schatten als de afstand niet bekend is).
 - Antwoord, na het zoeken, nog steeds UITSLUITEND met het ene JSON-object.`;
 
 const SYSTEM_PROMPT = `Je bent een reisassistent die korte weekendjes-weg met de camper voorstelt, vertrekpunt Dordrecht, Nederland (51.81, 4.67). Je antwoordt UITSLUITEND met één geldig JSON-object, zonder markdown-codeblokken, zonder inleidende of afsluitende tekst, exact in deze vorm:
-{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","supermarkt":"<naam + plaats van de dichtstbijzijnde supermarkt bij de camping, bv. 'Albert Heijn, Garderen'>","fietsAfstand":"<geschatte fietsafstand camping → supermarkt, bv. '~3 km (±12 min)'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
+{"title":"<korte naam, bv. 'Ardennen · Bouillon' of 'Veluwe · Kootwijk'>","region":"<land/provincie, bv. 'België' of 'Gelderland, NL'>","camping":"<naam van een echt bestaande camping of camperplaats in de buurt>","camperplaats":"<naam van een echt bestaande camperplaats/stellplaats in de buurt, geen camping>","campingRating":"<reviewcijfer 0-5 van de camping, alleen invullen als het uit Campz komt, anders leeg>","campingReviews":"<aantal reviews, alleen uit Campz, anders leeg>","camperplaatsRating":"<reviewcijfer 0-5 van de camperplaats, alleen uit Campz, anders leeg>","camperplaatsReviews":"<aantal reviews, alleen uit Campz, anders leeg>","camperplaatsUrl":"<Campz-pagina van de camperplaats, anders leeg>","plaats":"<plaatsnaam>","wandelNaam":"<naam van een echt bestaande wandelroute>","wandelKm":"<afstand tussen 8 en 15 km, bv. '11 km'>","wandelStart":"<startpunt/adres van de wandeling>","rijtijd":"<indicatie rijtijd met de camper vanaf Dordrecht, bv. '~2u15 rijden'>","supermarkt":"<naam + plaats van de dichtstbijzijnde supermarkt bij de camping, bv. 'Albert Heijn, Garderen'>","fietsAfstand":"<geschatte fietsafstand camping → supermarkt, bv. '~3 km (±12 min)'>","extra":"<2-3 zinnen extra praktische info: bijzonderheden, combinatietips, drukte, honden, parkeren, seizoen e.d.>"}
 
 Regels:
 - Kies een bestemming die past bij de zoekterm/wens van de gebruiker, geschikt voor een kort weekendje (max ~3,5 uur rijden vanaf Dordrecht, tenzij expliciet anders gevraagd).
@@ -221,6 +232,12 @@ module.exports = async (req, res) => {
       wandelStart: parsed.wandelStart || '',
       rijtijd: parsed.rijtijd || '',
       campzUrl: /^https:\/\//.test(parsed.campzUrl || '') ? parsed.campzUrl : '',
+      campingRating: cleanRating(parsed.campingRating, usedCampz),
+      campingReviews: cleanCount(parsed.campingReviews, usedCampz),
+      camperplaats: parsed.camperplaats || '',
+      camperplaatsUrl: /^https:\/\//.test(parsed.camperplaatsUrl || '') && usedCampz ? parsed.camperplaatsUrl : '',
+      camperplaatsRating: cleanRating(parsed.camperplaatsRating, usedCampz),
+      camperplaatsReviews: cleanCount(parsed.camperplaatsReviews, usedCampz),
       supermarkt: parsed.supermarkt || '',
       fietsAfstand: parsed.fietsAfstand || '',
       extra: parsed.extra || '',
