@@ -237,6 +237,8 @@
   .dest-card .dest-drive{display:inline-block;margin-top:.35rem;background:var(--olive);color:#fff;font-size:.78rem;font-weight:500;padding:.28rem .7rem;border-radius:20px;}
   .dest-rating{display:inline-block;margin-left:.3rem;font-size:.75rem;font-weight:600;color:var(--gold);white-space:nowrap;}
   .dest-gmaps{margin-left:.35rem;font-size:.7rem;color:var(--stone);white-space:nowrap;}
+  .dest-grating{color:var(--gold);font-weight:600;}
+  .dest-grating small{font-weight:400;color:var(--stone);}
   .dest-rating small{font-weight:400;color:var(--stone);}
   .dest-note{font-size:.78rem;color:var(--stone);margin-top:.8rem;line-height:1.5;}
   .dest-toggle{display:flex;align-items:center;gap:.35rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--stone);cursor:pointer;user-select:none;}
@@ -1553,6 +1555,39 @@ function ratingBadge(r, n) {
 function gmapsLink(name) {
   return ` <a class="dest-gmaps" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}" target="_blank" rel="noopener" title="Google Maps-reviews">Google ↗</a>`;
 }
+
+// Google-reviews: haalt per camping/camperplaats het Google-cijfer op (via /api/gplace), pas als de regel in beeld komt
+const gCache = {};
+async function fillGoogle(a) {
+  if (a.dataset.done) return;
+  a.dataset.done = '1';
+  const name = new URL(a.href).searchParams.get('query') || '';
+  const region = a.closest('.dest-card')?.querySelector('.dest-region')?.textContent.trim() || '';
+  const q = region ? name + ', ' + region : name;
+  try {
+    let d = gCache[q];
+    if (!d) { try { d = JSON.parse(sessionStorage.getItem('g:' + q) || 'null'); } catch (e) {} }
+    if (!d) {
+      d = await fetch('/api/gplace?q=' + encodeURIComponent(q)).then(r => r.json());
+      gCache[q] = d;
+      try { sessionStorage.setItem('g:' + q, JSON.stringify(d)); } catch (e) {}
+    }
+    if (!d || !d.ok) return;
+    if (/^https:\/\//.test(d.url || '')) a.href = d.url;
+    a.className = 'dest-gmaps dest-grating';
+    a.innerHTML = 'Google ⭐ ' + d.rating + ' <small>(' + d.count + ')</small>';
+    a.title = 'Google Maps: ' + (d.name || name);
+  } catch (e) {}
+}
+let gObserver = null;
+function observeGoogle() {
+  const links = document.querySelectorAll('a.dest-gmaps:not([data-done])');
+  if (!('IntersectionObserver' in window)) { links.forEach(fillGoogle); return; }
+  gObserver = gObserver || new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { gObserver.unobserve(e.target); fillGoogle(e.target); }
+  }), { rootMargin: '150px' });
+  links.forEach(a => { if (!a.dataset.obs) { a.dataset.obs = '1'; gObserver.observe(a); } });
+}
 function plekRow(icon, label, name, url, r, n) {
   if (!name) return '';
   const nm = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(name)}</a>` : esc(name);
@@ -1862,6 +1897,8 @@ loadCustomTrips();
 sortDestCards();
 loadStaticExtras();
 loadCustomWeekends();
+observeGoogle();
+new MutationObserver(() => observeGoogle()).observe(document.getElementById('destGrid'), { childList: true, subtree: true });
 </script>
 
 </body>
