@@ -244,6 +244,9 @@
   .dest-toggle{display:flex;align-items:center;gap:.35rem;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--stone);cursor:pointer;user-select:none;}
   .dest-toggle .chevron{font-size:.6rem;transition:transform .2s;}
   .dest-card.open .dest-toggle .chevron{transform:rotate(180deg);}
+  .dest-map{margin-bottom:.7rem;}
+  .dest-map iframe{width:100%;height:220px;border:0;border-radius:8px;display:block;background:var(--cream,#eee);}
+  .dest-map a{display:inline-block;margin-top:.3rem;font-size:.75rem;color:var(--stone);}
   .dest-body{display:none;margin-top:.7rem;}
   .dest-card.open .dest-body{display:block;}
   .dest-original{font-size:.8rem;color:var(--mid);line-height:1.55;margin-top:.7rem;padding:.7rem .85rem;background:rgba(0,0,0,.03);border-radius:8px;white-space:pre-wrap;word-break:break-word;}
@@ -1547,7 +1550,32 @@ function linkify(s) {
 // ─── Weekendjes weg: AI-gegenereerde bestemmingen ──────────────
 function toggleDest(el) {
   const card = el.closest('.dest-card');
-  if (card) card.classList.toggle('open');
+  if (!card) return;
+  card.classList.toggle('open');
+  card.querySelectorAll('iframe[data-src]').forEach(f => { f.src = f.dataset.src; f.removeAttribute('data-src'); });
+}
+// Kaartje per weekend: Google Maps-embed (zonder key) op camping + plaats, laadt pas bij uitklappen
+function addMaps() {
+  document.querySelectorAll('#destGrid .dest-card:not([data-map])').forEach(card => {
+    card.dataset.map = '1';
+    const rowText = lbl => {
+      const r = [...card.querySelectorAll('.dest-row')].find(x => x.querySelector('strong')?.textContent.trim() === lbl + ':');
+      const a = r && r.querySelector('span:last-child a:not(.dest-gmaps)');
+      return r ? (a ? a.textContent : r.querySelector('span:last-child').childNodes[1]?.textContent || '') : '';
+    };
+    const clean = t => String(t || '').replace(/,?\s*±\s*\d+\s*km/g, '').replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+    const camping = clean(rowText('Camping'));
+    const plaats = clean(card.querySelector('.dest-row:has(.dest-icon)') ? [...card.querySelectorAll('.dest-row')].find(x => x.querySelector('strong')?.textContent.trim() === 'Plaats:')?.querySelector('span:last-child')?.textContent.replace('Plaats:', '') : '');
+    const q = (plaats && !camping.toLowerCase().includes(plaats.toLowerCase()) ? camping + ' ' + plaats : camping).trim() || card.querySelector('h3')?.textContent.trim() || '';
+    if (!q) return;
+    let body = card.querySelector('.dest-body');
+    if (!body) {
+      card.insertAdjacentHTML('beforeend', '<div class="dest-toggle" onclick="toggleDest(this)"><span class="chevron">▼</span> Meer info</div><div class="dest-body"></div>');
+      body = card.querySelector('.dest-body');
+    }
+    const enc = encodeURIComponent(q);
+    body.insertAdjacentHTML('afterbegin', `<div class="dest-map"><iframe title="Kaart ${esc(q)}" data-src="https://www.google.com/maps?q=${enc}&output=embed&hl=nl" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe><a href="https://www.google.com/maps/dir/?api=1&origin=Dordrecht&destination=${enc}" target="_blank" rel="noopener">🧭 Route vanaf Dordrecht ↗</a></div>`);
+  });
 }
 function ratingBadge(r, n) {
   return r ? ` <span class="dest-rating" title="Review op Campz">⭐ ${r}${n ? ' <small>(' + n + ')</small>' : ''}</span>` : '';
@@ -1897,8 +1925,9 @@ loadCustomTrips();
 sortDestCards();
 loadStaticExtras();
 loadCustomWeekends();
+addMaps();
 observeGoogle();
-new MutationObserver(() => observeGoogle()).observe(document.getElementById('destGrid'), { childList: true, subtree: true });
+new MutationObserver(() => { addMaps(); observeGoogle(); }).observe(document.getElementById('destGrid'), { childList: true, subtree: true });
 </script>
 
 </body>
