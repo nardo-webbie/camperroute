@@ -223,7 +223,16 @@
   .trip-view[data-theme="weekend"]{--ink:#1c2318;--parchment:#eef1e4;--warm:#f8faf2;--rust:#5c7a3a;--rust-light:#7a9a54;--gold:#b8862a;--gold-light:#d4a84a;--olive:#3a5a2a;--olive-light:#5a8040;--stone:#6a6e5a;--border:#d4dcc0;--mid:#2a3320;}
 
   /* Weekendjes-weg: destination cards */
-  .dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;margin-top:1rem;}
+  .dest-grid{display:grid;grid-template-columns:1fr;gap:1.1rem;margin-top:1rem;}
+  .dest-weather{margin:.6rem 0;}
+  .wx-title{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--stone);margin-bottom:.35rem;}
+  .wx-days{display:grid;grid-template-columns:repeat(7,minmax(70px,1fr));gap:.4rem;overflow-x:auto;}
+  .wx-day{background:var(--cream,#f5f0e6);border:1px solid var(--border);border-radius:10px;padding:.4rem .3rem;text-align:center;font-size:.78rem;}
+  .wx-we{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);}
+  .wx-d{font-weight:700;text-transform:capitalize;}
+  .wx-i{font-size:1.4rem;line-height:1.5;}
+  .wx-t span{color:var(--stone);}
+  .wx-p{font-size:.68rem;color:var(--stone);margin-top:.15rem;white-space:nowrap;}
   .dest-card{position:relative;background:var(--warm);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.06);}
   .dest-card .dest-del{position:absolute;top:.6rem;right:.7rem;background:none;border:none;color:var(--stone);font-size:1.1rem;cursor:pointer;line-height:1;padding:.2rem .4rem;border-radius:4px;}
   .dest-card .dest-del:hover{color:var(--rust);background:rgba(0,0,0,.05);}
@@ -1616,6 +1625,58 @@ function observeGoogle() {
   }), { rootMargin: '150px' });
   links.forEach(a => { if (!a.dataset.obs) { a.dataset.obs = '1'; gObserver.observe(a); } });
 }
+
+// Weersverwachting (Xweather via /api/weather), lazy per kaart
+const WX_COUNTRY = { nl: 'nl', nederland: 'nl', duitsland: 'de', 'belgië': 'be', belgie: 'be', luxemburg: 'lu', frankrijk: 'fr' };
+function wxIcon(icon, text) {
+  const k = String(icon || '').toLowerCase();
+  if (/tstorm/.test(k)) return '⛈️';
+  if (/snow|sleet|flurr|wintry/.test(k)) return '❄️';
+  if (/rain|shower|drizzle/.test(k)) return '🌧️';
+  if (/fog|haze|mist/.test(k)) return '🌫️';
+  if (/^(clear|sunny|fair)/.test(k)) return k.startsWith('clear') && /n\./.test(k) ? '🌙' : '☀️';
+  if (/^(pcloudy|mcloudy|pcloudyr|mcloudyr)/.test(k) || /partly|mostly sunny/i.test(text || '')) return '⛅';
+  if (/cloud|ovc/.test(k)) return '☁️';
+  return '🌡️';
+}
+async function fillWeather(el) {
+  if (el.dataset.done) return;
+  el.dataset.done = '1';
+  const q = el.dataset.q;
+  try {
+    let d; try { d = JSON.parse(sessionStorage.getItem('w:' + q) || 'null'); } catch (e) {}
+    if (!d || Date.now() - d.t > 1800000) {
+      const r = await fetch('/api/weather?q=' + encodeURIComponent(q)).then(r => r.json());
+      d = { t: Date.now(), r };
+      try { sessionStorage.setItem('w:' + q, JSON.stringify(d)); } catch (e) {}
+    }
+    const r = d.r;
+    if (!r || !r.ok) { el.remove(); return; }
+    const dn = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+    el.innerHTML = '<div class="wx-title">🌤️ Weer ' + esc(el.dataset.place) + '</div><div class="wx-days">' + r.days.map(x => {
+      const dt = new Date(x.date); const wd = dt.getDay();
+      return `<div class="wx-day${wd === 6 || wd === 0 ? ' wx-we' : ''}" title="${esc(x.text || '')}"><div class="wx-d">${dn[wd]} ${dt.getDate()}</div><div class="wx-i">${wxIcon(x.icon, x.text)}</div><div class="wx-t"><b>${Math.round(x.max)}°</b> <span>${Math.round(x.min)}°</span></div><div class="wx-p">${x.pop != null ? '💧' + Math.round(x.pop) + '%' : ''}${x.wind != null ? ' · 💨' + Math.round(x.wind) : ''}</div></div>`;
+    }).join('') + '</div>';
+  } catch (e) { el.remove(); }
+}
+let wxObserver = null;
+function addWeather() {
+  document.querySelectorAll('#destGrid .dest-card:not([data-wx])').forEach(card => {
+    card.dataset.wx = '1';
+    const rows = [...card.querySelectorAll('.dest-row')];
+    const pl = rows.find(x => x.querySelector('strong')?.textContent.trim() === 'Plaats:')?.querySelector('span:last-child')?.textContent.replace('Plaats:', '').replace(/\(.*?\)/g, '').trim();
+    const reg = (card.querySelector('.dest-region')?.textContent || '').toLowerCase();
+    const cc = Object.keys(WX_COUNTRY).find(k => new RegExp('(^|[ ,])' + k + '$').test(reg.trim()));
+    if (!pl) return;
+    const q = pl + (cc ? ',' + WX_COUNTRY[cc] : '');
+    const div = document.createElement('div');
+    div.className = 'dest-weather'; div.dataset.q = q; div.dataset.place = pl;
+    (card.querySelector('.dest-drive') || card.lastElementChild).before(div);
+    if (!('IntersectionObserver' in window)) { fillWeather(div); return; }
+    wxObserver = wxObserver || new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { wxObserver.unobserve(e.target); fillWeather(e.target); } }), { rootMargin: '150px' });
+    wxObserver.observe(div);
+  });
+}
 function plekRow(icon, label, name, url, r, n) {
   if (!name) return '';
   const nm = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(name)}</a>` : esc(name);
@@ -1926,8 +1987,9 @@ sortDestCards();
 loadStaticExtras();
 loadCustomWeekends();
 addMaps();
+addWeather();
 observeGoogle();
-new MutationObserver(() => { addMaps(); observeGoogle(); }).observe(document.getElementById('destGrid'), { childList: true, subtree: true });
+new MutationObserver(() => { addMaps(); addWeather(); observeGoogle(); }).observe(document.getElementById('destGrid'), { childList: true, subtree: true });
 </script>
 
 </body>
