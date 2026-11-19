@@ -1,7 +1,8 @@
 // Xweather (AerisWeather) dagverwachting voor een plaats. Env: XWEATHER_CLIENT_ID, XWEATHER_CLIENT_SECRET
 module.exports = async (req, res) => {
   try {
-    const id = process.env.XWEATHER_CLIENT_ID, secret = process.env.XWEATHER_CLIENT_SECRET;
+    const clean = v => String(v || '').trim().replace(/^['"]|['"]$/g, '').trim();
+    const id = clean(process.env.XWEATHER_CLIENT_ID), secret = clean(process.env.XWEATHER_CLIENT_SECRET);
     if (!id || !secret) { res.status(200).json({ ok: false, reason: 'no-key' }); return; }
     const q = String((req.query && req.query.q) || '').trim().slice(0, 100);
     if (q.length < 2 || !/^[\p{L}\p{N} .,'()\-\/]+$/u.test(q)) { res.status(400).json({ ok: false, reason: 'q' }); return; }
@@ -17,7 +18,7 @@ module.exports = async (req, res) => {
     if (!r.ok || !j.success) {
       const e = j.error || {};
       console.error('weather fout', r.status, JSON.stringify(e).slice(0, 300));
-      res.status(200).json({ ok: false, reason: (e.code || 'http-' + r.status) + (e.description ? ': ' + String(e.description).slice(0, 120) : '') });
+      res.status(200).json({ ok: false, reason: (e.code || 'http-' + r.status) + ' [id ' + id.length + ' tekens, secret ' + secret.length + ' tekens]' + (e.description ? ': ' + String(e.description).slice(0, 120) : '') });
       return;
     }
     const periods = ((j.response || [])[0] || {}).periods || [];
