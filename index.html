@@ -1648,16 +1648,16 @@ async function fillWeather(el) {
     if (!d || Date.now() - d.t > 1800000) {
       const r = await fetch('/api/weather?q=' + encodeURIComponent(q)).then(r => r.json());
       d = { t: Date.now(), r };
-      try { sessionStorage.setItem('w:' + q, JSON.stringify(d)); } catch (e) {}
+      if (r && r.ok) { try { sessionStorage.setItem('w:' + q, JSON.stringify(d)); } catch (e) {} }
     }
     const r = d.r;
-    if (!r || !r.ok) { el.remove(); return; }
+    if (!r || !r.ok) { el.innerHTML = '<div class="wx-title">🌤️ Weer niet beschikbaar <small>(' + esc((r && r.reason) || 'geen antwoord') + ')</small></div>'; return; }
     const dn = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
     el.innerHTML = '<div class="wx-title">🌤️ Weer ' + esc(el.dataset.place) + '</div><div class="wx-days">' + r.days.map(x => {
       const dt = new Date(x.date); const wd = dt.getDay();
       return `<div class="wx-day${wd === 6 || wd === 0 ? ' wx-we' : ''}" title="${esc(x.text || '')}"><div class="wx-d">${dn[wd]} ${dt.getDate()}</div><div class="wx-i">${wxIcon(x.icon, x.text)}</div><div class="wx-t"><b>${Math.round(x.max)}°</b> <span>${Math.round(x.min)}°</span></div><div class="wx-p">${x.pop != null ? '💧' + Math.round(x.pop) + '%' : ''}${x.wind != null ? ' · 💨' + Math.round(x.wind) : ''}</div></div>`;
     }).join('') + '</div>';
-  } catch (e) { el.remove(); }
+  } catch (e) { el.innerHTML = '<div class="wx-title">🌤️ Weer niet beschikbaar <small>(' + esc(e.message || 'fout') + ')</small></div>'; }
 }
 let wxObserver = null;
 function addWeather() {
