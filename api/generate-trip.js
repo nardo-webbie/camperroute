@@ -135,6 +135,89 @@ Regels:
 - Gebruik het gevraagde aantal dagen/periode nauwkeurig.
 - Schrijf alles in het Nederlands, in dezelfde toon als een ervaren campervriend: concreet, warm, praktisch.`;
 
+
+const WS_HEADER = () => ({ 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID || 'wrkspc_01Q2r3TTRGRiovzfU84LEm1V' });
+
+async function askJson(apiKey, system, user, maxTokens) {
+  const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { ...WS_HEADER(), 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }),
+  });
+  if (!aiRes.ok) throw new Error('AI-fout ' + aiRes.status + ': ' + (await aiRes.text()).slice(0, 300));
+  const aiData = await aiRes.json();
+  const block = aiData.content && aiData.content.find(b => b.type === 'text');
+  const raw = block ? block.text : '';
+  try {
+    if (!raw) throw new Error('leeg antwoord van AI');
+    const jsonStr = extractJson(raw);
+    try { return JSON.parse(jsonStr); } catch (e) { return JSON.parse(sanitizeJson(jsonStr)); }
+  } catch (e) {
+    console.error('generate-trip JSON-parsefout:', e.message, '| stop_reason:', aiData.stop_reason, '| raw (laatste 400):', raw.slice(-400));
+    throw new Error('AI gaf ongeldige JSON terug: ' + e.message + (aiData.stop_reason === 'max_tokens' ? ' — antwoord werd afgekapt' : ''));
+  }
+}
+
+const DAY_FORMAT = `{
+  "id": "d<n>", "num": "<nn>", "title": "<Van → Naar of activiteit>", "sub": "<korte ondertitel>",
+  "km": "<bv. '~320 km' of '— km' voor rustdagen>", "duration": "<bv. '±4 uur' of 'Rustdag'>", "type": "drive" of "rest",
+  "lat": <decimaal>, "lon": <decimaal>, "body": "<2-4 zinnen, concreet>",
+  "tags": [{"cls":"tag-camper|tag-hond|tag-wandel|tag-rust|tag-ferry|tag-warn|tag-natuur","label":"<korte tag>"}],
+  "boxes": [{"cls":"box-tip|box-camper|box-warn|box-natuur","label":"<Label:>","text":"<toelichting>"}]
+}`;
+
+const OUTLINE_PROMPT = `Je bent een reisplanner voor Nederlandstalige camperroutes (vertrek Dordrecht). Maak ALLEEN het grove plan van de reis, geen dagdetails. Antwoord UITSLUITEND met geldige JSON:
+{
+  "destination": "<bestemmingsnaam>", "headerLabel": "<bv. 'Camperreis · juni 2027'>",
+  "meta": "<aantal dagen · vervoer · met/zonder hond · bijzonderheden>", "barText": "<één regel sfeertekst met emoji vooraan>",
+  "specs": ["<emoji + korte spec>", "... 4-5 stuks"], "tabLabel": "<kort label met vlag-emoji>", "countryCode": "<ISO alpha-2 klein>",
+  "totalDays": <aantal dagen>,
+  "phases": [ {"label":"Fase 1 — <naam>","startDay":1,"endDay":5,"summary":"<1-2 zinnen: waar, wat, hoe te rijden, overnachtingsgebieden>"} ],
+  "totals": [{"val":"<aantal dagen>","lbl":"Dagen"},{"val":"<totale km of vluchttijd>","lbl":"Km totaal"},{"val":"<aantal rijdagen>","lbl":"Rijdagen"},{"val":"<aantal rust/verblijfsdagen>","lbl":"Rust/verblijf"}]
+}
+Regels: de fases sluiten aansluitend op elkaar aan (startDay van fase n+1 = endDay van fase n + 1), beginnen bij dag 1 en eindigen bij totalDays; elke fase heeft maximaal 5 dagen; logische, geografisch samenhangende route; houd rekening met overtocht/ferry, hond en periode; Nederlands, warm en praktisch.`;
+
+const PHASE_PROMPT = `Je werkt één fase uit van een Nederlandstalige camperreis. Je krijgt het grove plan (outline), de te maken fase en de vorige dag voor aansluiting. Antwoord UITSLUITEND met geldige JSON: {"days":[ ... ]} met precies één object per dag van startDay t/m endDay, in dit formaat:
+${DAY_FORMAT}
+Regels: "id" is "d<dagnummer>" over de hele reis (bv. d7), "num" het tweecijferige dagnummer; elke dag krijgt realistische "lat"/"lon" (WGS84) van de belangrijkste plek/overnachting; sluit geografisch aan op de vorige dag; concrete, bestaande plekken, wandelingen en praktische tips (camperwegen, campings, hond indien meegaat); Nederlands, warme toon.`;
+
+function cleanDays(days, startDay, endDay) {
+  const out = (Array.isArray(days) ? days : []).slice(0, 12).map((d, i) => ({
+    ...d,
+    id: 'd' + (startDay + i),
+    num: String(startDay + i).padStart(2, '0'),
+    lat: typeof d.lat === 'number' ? d.lat : null,
+    lon: typeof d.lon === 'number' ? d.lon : null,
+  }));
+  if (!out.length) throw new Error('AI gaf geen dagen terug voor deze fase');
+  return out;
+}
+
+function buildTrip(parsed, bestemming, wanneer, periode, trips) {
+  const themes = ['italy', 'england', 'ocean'];
+  return {
+    id: slugify(bestemming),
+    theme: themes[trips.length % themes.length],
+    destination: parsed.destination || bestemming,
+    headerLabel: parsed.headerLabel || `Camperreis · ${wanneer}`,
+    meta: parsed.meta || periode,
+    barText: parsed.barText || '',
+    specs: parsed.specs || [],
+    tabLabel: parsed.tabLabel || ('🧭 ' + (parsed.destination || bestemming)),
+    countryCode: (parsed.countryCode || '').toLowerCase().trim() || null,
+    phases: (parsed.phases || []).map(phase => ({
+      ...phase,
+      days: (phase.days || []).map(d => ({
+        ...d,
+        lat: typeof d.lat === 'number' ? d.lat : null,
+        lon: typeof d.lon === 'number' ? d.lon : null,
+      })),
+    })),
+    totals: parsed.totals || [],
+    createdAt: new Date().toISOString(),
+  };
+}
+
 module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
@@ -161,6 +244,40 @@ module.exports = async (req, res) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       res.status(500).json({ error: 'ANTHROPIC_API_KEY ontbreekt' });
+      return;
+    }
+
+    const step = (req.body || {}).step;
+    if (step) {
+      const b = req.body;
+      const ctx = `Bestemming: ${bestemming}\nWanneer: ${wanneer}\nGaat de hond (Brooklyn) mee: ${brooklyn === 'ja' ? 'ja' : 'nee'}\nVervoer: ${vervoer}\nPeriode/duur: ${periode}\nVertrekpunt: Dordrecht, Nederland`;
+      if (step === 'outline') {
+        const outline = await askJson(apiKey, OUTLINE_PROMPT, ctx, 4000);
+        if (!Array.isArray(outline.phases) || !outline.phases.length) throw new Error('AI gaf geen fases terug');
+        res.status(200).json(outline);
+        return;
+      }
+      if (step === 'phase') {
+        const o = b.outline || {};
+        const ph = (o.phases || [])[b.phaseIndex];
+        if (!ph) { res.status(400).json({ error: 'onbekende fase' }); return; }
+        const prev = b.prevDay ? `\nVorige dag (aansluiten): ${JSON.stringify({ id: b.prevDay.id, title: b.prevDay.title, lat: b.prevDay.lat, lon: b.prevDay.lon })}` : '\nDit is het begin van de reis.';
+        const user = `${ctx}\n\nGrof plan van de hele reis:\n${JSON.stringify({ totalDays: o.totalDays, phases: o.phases }, null, 1)}\n\nWerk nu fase ${b.phaseIndex + 1} uit: ${ph.label}, dag ${ph.startDay} t/m ${ph.endDay}. ${ph.summary || ''}${prev}`;
+        const out = await askJson(apiKey, PHASE_PROMPT, user, 8000);
+        res.status(200).json({ days: cleanDays(out.days, ph.startDay, ph.endDay) });
+        return;
+      }
+      if (step === 'save') {
+        const t = b.trip;
+        if (!t || !Array.isArray(t.phases) || !t.phases.length) { res.status(400).json({ error: 'ongeldige reis' }); return; }
+        const trips = await readGistFile('trips.json', []);
+        const trip = buildTrip(t, bestemming, wanneer, periode, trips);
+        trips.push(trip);
+        await writeGistFile('trips.json', trips);
+        res.status(200).json(trip);
+        return;
+      }
+      res.status(400).json({ error: 'onbekende stap' });
       return;
     }
 

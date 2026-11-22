@@ -1531,15 +1531,30 @@ async function submitNewTrip() {
   if (!password) { status.textContent = '⚠️ Voer het wachtwoord in'; return; }
 
   btn.disabled = true;
-  status.textContent = '⏳ AI genereert de route… dit kan een minuut duren';
+  status.textContent = '⏳ Stap 1: AI maakt het grove plan…';
   try {
-    const r = await fetch('/api/generate-trip', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bestemming, wanneer, brooklyn, vervoer, periode, password }),
-    });
-    if (!r.ok) throw new Error((await r.json()).error || r.status);
-    const trip = await r.json();
+    const base = { bestemming, wanneer, brooklyn, vervoer, periode, password };
+    const post = async body => {
+      const r = await fetch('/api/generate-trip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...base, ...body }) });
+      const txt = await r.text();
+      let j; try { j = JSON.parse(txt); } catch (e) { throw new Error('Serverfout (' + r.status + '): ' + txt.slice(0, 120)); }
+      if (!r.ok) throw new Error(j.error || r.status);
+      return j;
+    };
+    const outline = await post({ step: 'outline' });
+    const phases = [];
+    let prevDay = null;
+    for (let i = 0; i < outline.phases.length; i++) {
+      status.textContent = `⏳ Stap ${i + 2}/${outline.phases.length + 2}: fase ${i + 1} van ${outline.phases.length} uitwerken…`;
+      const { days } = await post({ step: 'phase', outline, phaseIndex: i, prevDay });
+      const ph = outline.phases[i];
+      phases.push({ label: ph.label, dayRange: `Dag ${ph.startDay}–${ph.endDay}`, days });
+      prevDay = days[days.length - 1];
+    }
+    status.textContent = '⏳ Opslaan…';
+    const { phases: _p, totalDays, ...head } = outline;
+    const r = await post({ step: 'save', trip: { ...head, phases } });
+    const trip = r;
     addTripTab(trip);
     switchTab(trip.id);
     status.textContent = '✓ Reis toegevoegd!';
