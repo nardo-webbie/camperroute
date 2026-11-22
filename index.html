@@ -1913,7 +1913,7 @@ function renderTripSection(trip) {
     <div class="oktober-bar">${esc(trip.barText || '')}</div>
     <div class="specs-bar">${specsHtml}</div>
     <div class="container">
-      <div class="controls"><button class="ctrl-btn" onclick="toggleAll(this)">Alles uitklappen</button></div>
+      <div class="controls"><button class="ctrl-btn" onclick="toggleAll(this)">Alles uitklappen</button> <button class="ctrl-btn" onclick="deleteTrip('${trip.id}')">🗑 Reis verwijderen</button></div>
       <div class="legend">
         <div class="legend-item"><div class="dot dot-drive"></div> Rijdag</div>
         <div class="legend-item"><div class="dot dot-rest"></div> Rustdag / verblijf</div>
@@ -1924,6 +1924,19 @@ function renderTripSection(trip) {
   document.body.insertBefore(section, document.getElementById('customTripsEnd'));
   initTripView(section);
   if (stopPoints.length) setTimeout(() => initHeaderMap(mapId, stopPoints, trip.theme), 0);
+}
+
+async function deleteTrip(id) {
+  if (!confirm('Deze reis definitief verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  const password = prompt('Wachtwoord:');
+  if (!password) return;
+  try {
+    const r = await fetch('/api/generate-trip?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { 'x-password': password } });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
+    document.querySelector(`.trip-view[data-trip="${id}"]`)?.remove();
+    document.querySelector(`.tab-btn[data-tab="${id}"]`)?.remove();
+    switchTab(document.querySelector('.tab-btn[data-tab]')?.dataset.tab || 'weekend');
+  } catch (e) { alert('Kon reis niet verwijderen: ' + e.message); }
 }
 
 function addTripTab(trip) {

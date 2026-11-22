@@ -226,6 +226,18 @@ module.exports = async (req, res) => {
       return;
     }
 
+    if (req.method === 'DELETE') {
+      const id = String((req.query && req.query.id) || '');
+      const pw = req.headers['x-password'] || '';
+      if (!pw || pw !== process.env.TIP_PASSWORD) { res.status(401).json({ error: 'Ongeldig wachtwoord' }); return; }
+      const trips = await readGistFile('trips.json', []);
+      const rest = trips.filter(t => t.id !== id);
+      if (rest.length === trips.length) { res.status(404).json({ error: 'Reis niet gevonden' }); return; }
+      await writeGistFile('trips.json', rest);
+      res.status(200).json({ ok: true });
+      return;
+    }
+
     if (req.method !== 'POST') {
       res.status(405).end();
       return;
