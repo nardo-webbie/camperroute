@@ -238,6 +238,29 @@ module.exports = async (req, res) => {
       return;
     }
 
+    if (req.method === 'PATCH') {
+      const pw = req.headers['x-password'] || '';
+      if (!pw || pw !== process.env.TIP_PASSWORD) { res.status(401).json({ error: 'Ongeldig wachtwoord' }); return; }
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const trips = await readGistFile('trips.json', []);
+      const trip = trips.find(t => t.id === body.id);
+      if (!trip) { res.status(404).json({ error: 'Reis niet gevonden' }); return; }
+      let added = 0;
+      for (const ph of trip.phases || []) for (const d of ph.days || []) {
+        const extra = (body.addBoxes || {})[d.id];
+        if (!Array.isArray(extra)) continue;
+        d.boxes = d.boxes || [];
+        for (const b of extra) {
+          if (!b || !b.text || d.boxes.some(x => x.text === b.text)) continue;
+          d.boxes.push({ cls: b.cls || 'box-tip', label: b.label || '', text: b.text });
+          added++;
+        }
+      }
+      await writeGistFile('trips.json', trips);
+      res.status(200).json({ ok: true, added });
+      return;
+    }
+
     if (req.method !== 'POST') {
       res.status(405).end();
       return;
